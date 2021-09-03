@@ -20,7 +20,7 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-
+using Newtonsoft.Json;
 namespace VWOSdk
 {
     internal class SegmentEvaluator : ISegmentEvaluator
@@ -75,6 +75,21 @@ namespace VWOSdk
                 {
                     return Convert.ToBoolean(value);
                 }
+                if (variableType == Constants.VariableTypes.JSON)
+                {
+                    var jsonFeatureValue = JsonConvert.SerializeObject(value);
+                    if (IsValidJson(jsonFeatureValue))
+                    {
+                        return value;
+                    }
+                    else
+                    {
+                        LogErrorMessage.UnableToTypeCast(typeof(IVWOClient).FullName, value, variableType, value.GetType().Name);
+                        return null;
+                    }
+
+                }
+
                 return value;
             }
             catch
@@ -83,7 +98,48 @@ namespace VWOSdk
                 return null;
             }
         }
+        public bool IsValidJson(string input)
+        {
+            input = input.Trim();
+            if ((input.StartsWith("{") && input.EndsWith("}")) || //For object
+                (input.StartsWith("[") && input.EndsWith("]"))) //For array
+            {
+                try
+                {
+                    //parse the input into a JObject
+                    var jObject = JObject.Parse(input);
 
+                    foreach (var jo in jObject)
+                    {
+                        string name = jo.Key;
+                        JToken value = jo.Value;
+
+                        //if the element has a missing value, it will be Undefined - this is invalid
+                        if (value.Type == JTokenType.Undefined)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                catch (JsonReaderException jex)
+                {
+                    //Exception in parsing json
+                    Console.WriteLine(jex.Message);
+                    return false;
+                }
+                catch (Exception ex) //some other exception
+                {
+                    Console.WriteLine(ex.ToString());
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
         private bool evaluateSegment(Dictionary<string, dynamic> segments, Dictionary<string, dynamic> customVariables)
         {
             if (segments.Count == 0)

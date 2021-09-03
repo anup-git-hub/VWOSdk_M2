@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using Xunit;
-
+using Newtonsoft.Json;
 namespace VWOSdk.Tests
 {
     public class VWOClientTests
@@ -91,7 +91,30 @@ namespace VWOSdk.Tests
                 {"key", "MockVariableKey"}
             }
         };
+        private static dynamic jsonVariable = new Dictionary<string, dynamic>()
+                                        {
+                                            {"type", "simple"},
+                                            {"name", "algorithm-testing"},
+                                            {"modles", new List<string>(){"linear","sequential"}}
+                                        };
+        private readonly List<Dictionary<string, dynamic>> MockVariablesJson = new List<Dictionary<string, dynamic>>() {
+            new Dictionary<string, dynamic>()
+            {
+                {"value", jsonVariable},
 
+               // {"value", "{" + "type" +":" +"simple"+","+"name" +":" +"algorithm-testing"+ "," + "modles" +":" +"[" + "simple"+","+"sequential"+"]"+"}"},
+                {"type", "json"},
+                {"key", "MockVariableKey"}
+            }
+        };
+        private readonly List<Dictionary<string, dynamic>> MockVariablesWrongJson = new List<Dictionary<string, dynamic>>() {
+            new Dictionary<string, dynamic>()
+            {
+                {"value", "Wrong Json"},
+                {"type", "json"},
+                {"key", "MockVariableKey"}
+            }
+        };
         private readonly Dictionary<string, dynamic> MockSegment = new Dictionary<string, dynamic>()
         {
             {
@@ -1412,7 +1435,46 @@ namespace VWOSdk.Tests
             mockCampaignResolver.Verify(mock => mock.GetCampaign(It.IsAny<AccountSettings>(), It.IsAny<string>()), Times.Once);
             mockCampaignResolver.Verify(mock => mock.GetCampaign(It.IsAny<AccountSettings>(), It.Is<string>(val => MockCampaignKey.Equals(val))), Times.Once);
         }
-
+        [Fact]
+        public void GetFeatureVariableValue_Should_Return_Variable_When_Campaign_Is_Feature_Test_And_Variable_Found_Json()
+        {
+            var mockApiCaller = Mock.GetApiCaller<Settings>();
+            AppContext.Configure(mockApiCaller.Object);
+            AppContext.Configure(new FileReaderApiCaller("ABCampaignWithSegment50percVariation50-50"));
+            var mockValidator = Mock.GetValidator();
+            var mockCampaignResolver = Mock.GetCampaignAllocator();
+            var selectedCampaign = GetCampaign(campaignType: Constants.CampaignTypes.FEATURE_TEST, mockVariables: MockVariablesJson);
+            Mock.SetupResolve(mockCampaignResolver, selectedCampaign, selectedCampaign);
+            var mockVariationResolver = Mock.GetVariationResolver();
+            var selectedVariation = GetVariation(variables: MockVariablesJson);
+            Mock.SetupResolve(mockVariationResolver, selectedVariation);
+            var vwoClient = GetVwoClient(mockValidator: mockValidator, mockCampaignResolver: mockCampaignResolver, mockVariationResolver: mockVariationResolver, segmentEvaluator: new SegmentEvaluator());
+            var result = vwoClient.GetFeatureVariableValue(MockCampaignKey, MockVariableKey, MockUserId);          
+            Assert.Equal(result, jsonVariable);
+            mockCampaignResolver.Verify(mock => mock.GetCampaign(It.IsAny<AccountSettings>(), It.IsAny<string>()), Times.Once);
+            mockCampaignResolver.Verify(mock => mock.GetCampaign(It.IsAny<AccountSettings>(), It.Is<string>(val => MockCampaignKey.Equals(val))), Times.Once);
+        }
+        [Fact]
+        public void GetFeatureVariableValue_Should_Return_Variable_When_Campaign_Is_Feature_Test_And_Variable_NotFound_Json()
+        {
+            var mockApiCaller = Mock.GetApiCaller<Settings>();
+            AppContext.Configure(mockApiCaller.Object);
+            AppContext.Configure(new FileReaderApiCaller("ABCampaignWithSegment50percVariation50-50"));
+            var mockValidator = Mock.GetValidator();
+            var mockCampaignResolver = Mock.GetCampaignAllocator();
+            var selectedCampaign = GetCampaign(segments: MockSegment, campaignType: Constants.CampaignTypes.FEATURE_TEST, mockVariables: MockVariablesWrongJson);
+            Mock.SetupResolve(mockCampaignResolver, selectedCampaign, selectedCampaign);
+            var mockVariationResolver = Mock.GetVariationResolver();
+            var selectedVariation = GetVariation(variables: MockVariablesWrongJson);
+            Mock.SetupResolve(mockVariationResolver, selectedVariation);
+            var mockSegmentEvaluator = Mock.GetSegmentEvaluator();
+            Mock.SetupResolve(mockSegmentEvaluator, true);
+            var vwoClient = GetVwoClient(mockValidator: mockValidator, mockCampaignResolver: mockCampaignResolver, mockVariationResolver: mockVariationResolver, segmentEvaluator: mockSegmentEvaluator.Object);
+            var result = vwoClient.GetFeatureVariableValue(MockCampaignKey, MockVariableKey, MockUserId);
+            Assert.Null(result);
+            mockCampaignResolver.Verify(mock => mock.GetCampaign(It.IsAny<AccountSettings>(), It.IsAny<string>()), Times.Once);
+            mockCampaignResolver.Verify(mock => mock.GetCampaign(It.IsAny<AccountSettings>(), It.Is<string>(val => MockCampaignKey.Equals(val))), Times.Once);
+        }
         [Fact]
         public void GetFeatureVariableValue_Should_Return_Null_When_Campaign_Is_Feature_Rollout_But_Variable_Not_Found()
         {

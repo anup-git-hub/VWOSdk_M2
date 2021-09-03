@@ -64,7 +64,8 @@ namespace VWOSdk
             {
                 foreach (var item in enumerable)
                 {
-                    result[keySelector(item)] = item;
+                    if (keySelector(item) != null)
+                        result[keySelector(item)] = item;
                 }
             }
             return result;
