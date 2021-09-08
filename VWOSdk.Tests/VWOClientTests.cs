@@ -101,8 +101,6 @@ namespace VWOSdk.Tests
             new Dictionary<string, dynamic>()
             {
                 {"value", jsonVariable},
-
-               // {"value", "{" + "type" +":" +"simple"+","+"name" +":" +"algorithm-testing"+ "," + "modles" +":" +"[" + "simple"+","+"sequential"+"]"+"}"},
                 {"type", "json"},
                 {"key", "MockVariableKey"}
             }

@@ -84,7 +84,7 @@ namespace VWOSdk
                     }
                     else
                     {
-                        LogErrorMessage.UnableToTypeCast(typeof(IVWOClient).FullName, value, variableType, value.GetType().Name);
+                        LogErrorMessage.UnableToParseJson(typeof(IVWOClient).FullName, jsonFeatureValue, variableType);                       
                         return null;
                     }
 
@@ -101,42 +101,26 @@ namespace VWOSdk
         public bool IsValidJson(string input)
         {
             input = input.Trim();
-            if ((input.StartsWith("{") && input.EndsWith("}")) || //For object
-                (input.StartsWith("[") && input.EndsWith("]"))) //For array
-            {
+            
                 try
                 {
                     //parse the input into a JObject
                     var jObject = JObject.Parse(input);
-
                     foreach (var jo in jObject)
                     {
                         string name = jo.Key;
-                        JToken value = jo.Value;
-
-                        //if the element has a missing value, it will be Undefined - this is invalid
+                        JToken value = jo.Value;                      
                         if (value.Type == JTokenType.Undefined)
                         {
                             return false;
                         }
                     }
-                }
-                catch (JsonReaderException jex)
-                {
-                    //Exception in parsing json
-                    Console.WriteLine(jex.Message);
+                }               
+                catch 
+                {                    
                     return false;
                 }
-                catch (Exception ex) //some other exception
-                {
-                    Console.WriteLine(ex.ToString());
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
+           
 
             return true;
         }
