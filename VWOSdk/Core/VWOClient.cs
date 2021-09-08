@@ -371,9 +371,10 @@ namespace VWOSdk
                         LogDebugMessage.DuplicateCall(typeof(IVWOClient).FullName, nameof(IsFeatureEnabled));
                         return false;
                     }
-                    if (campaign.Type == Constants.CampaignTypes.FEATURE_TEST)
+                    if (campaign.Type == Constants.CampaignTypes.FEATURE_TEST || campaign.Type == Constants.CampaignTypes.FEATURE_ROLLOUT)
                     {
-                        var result = assignedVariation.Variation.IsFeatureEnabled;
+                        var result = campaign.Type == Constants.CampaignTypes.FEATURE_ROLLOUT?true: assignedVariation.Variation.IsFeatureEnabled;
+                        
                         if (result)
                         {
                             if (this._BatchEventData != null)
@@ -396,6 +397,7 @@ namespace VWOSdk
                         }
                         return result;
                     }
+                    
                 }
                 else
                 {
@@ -715,8 +717,7 @@ namespace VWOSdk
         private bool isCampaignActivated(string apiName, string userId, Campaign campaign)
         {
             if (!apiName.Equals(Constants.CampaignTypes.ACTIVATE, StringComparison.InvariantCultureIgnoreCase)
-              && !apiName.Equals(Constants.CampaignTypes.IS_FEATURE_ENABLED, StringComparison.InvariantCultureIgnoreCase)
-              && !campaign.Type.Equals(Constants.CampaignTypes.FEATURE_ROLLOUT, StringComparison.InvariantCultureIgnoreCase))
+              && !apiName.Equals(Constants.CampaignTypes.IS_FEATURE_ENABLED, StringComparison.InvariantCultureIgnoreCase))
             {
                 LogDebugMessage.CampaignNotActivated(file, apiName, campaign.Key, userId);
                 LogInfoMessage.CampaignNotActivated(file, apiName.Equals(Constants.CampaignTypes.TRACK, StringComparison.InvariantCultureIgnoreCase) ? "track it" : "get the decision/value", campaign.Key, userId);

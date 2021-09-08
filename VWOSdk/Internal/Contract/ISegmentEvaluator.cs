@@ -24,5 +24,6 @@ namespace VWOSdk
     {
         bool evaluate(string userId, string campaignKey, string segmentationType, Dictionary<string, dynamic> segments, Dictionary<string, dynamic> customVariables );
         dynamic getTypeCastedFeatureValue(dynamic value, string variableType);
+        bool IsValidJson(string value);
     }
 }
