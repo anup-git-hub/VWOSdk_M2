@@ -44,9 +44,11 @@ namespace VWOSdk
 
             if (userStorageMap == null)
             {
+
+                double hashValue = 0;
                 double maxVal = Constants.Variation.MAX_TRAFFIC_VALUE;
-                double multiplier = maxVal / campaign.PercentTraffic / 100; ///This is to evenly spread all user among variations.
-                var bucketValue = this._userHasher.ComputeBucketValue(userId, maxVal, multiplier, out double hashValue);
+                double multiplier = maxVal / campaign.PercentTraffic / 100; //This is to evenly spread all user among variations.
+                var bucketValue = campaign.IsBucketingSeedEnabled ==true ?  this._userHasher.ComputeBucketValue(CampaignHelper.getBucketingSeed(userId,campaign,null), userId, maxVal, multiplier, out hashValue): this._userHasher.ComputeBucketValue(userId, maxVal, multiplier, out hashValue);
                 var selectedVariation = campaign.Variations.Find(bucketValue);
                 LogDebugMessage.VariationHashBucketValue(file, userId, campaign.Key, campaign.PercentTraffic, hashValue, bucketValue);
                 return selectedVariation;
@@ -55,8 +57,9 @@ namespace VWOSdk
             return campaign.Variations.Find(userStorageMap.VariationName, GetVariationName);
         }
 
-        public Variation TargettedVariation(string userId, List<Variation> whiteListedVariations)
+        public Variation TargettedVariation(string userId, BucketedCampaign campaign, List<Variation> whiteListedVariations)
         {
+            
             int whiteListedVariationsLength = whiteListedVariations.Count;
             RangeBucket<Variation> whiteListedVariationsList = new RangeBucket<Variation>();
             Variation targettedVariation;
@@ -74,7 +77,7 @@ namespace VWOSdk
                 whiteListedVariationsList = GetVariationAllocationRanges(whiteListedVariations);
                 double maxVal = Constants.Variation.MAX_TRAFFIC_VALUE;
                 double multiplier = 1;
-                var bucketValue = this._userHasher.ComputeBucketValue(userId, Constants.Campaign.MAX_TRAFFIC_PERCENT, multiplier);
+                var bucketValue = this._userHasher.ComputeBucketValue(CampaignHelper.getBucketingSeed(userId, campaign, null), userId, Constants.Campaign.MAX_TRAFFIC_PERCENT, multiplier);
                 targettedVariation = whiteListedVariationsList.Find(bucketValue);
             }
             return targettedVariation;
@@ -151,5 +154,6 @@ namespace VWOSdk
         {
             return variation.Id;
         }
+     
     }
 }

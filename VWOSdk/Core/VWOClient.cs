@@ -373,8 +373,8 @@ namespace VWOSdk
                     }
                     if (campaign.Type == Constants.CampaignTypes.FEATURE_TEST || campaign.Type == Constants.CampaignTypes.FEATURE_ROLLOUT)
                     {
-                        var result = campaign.Type == Constants.CampaignTypes.FEATURE_ROLLOUT?true: assignedVariation.Variation.IsFeatureEnabled;
-                        
+                        var result = campaign.Type == Constants.CampaignTypes.FEATURE_ROLLOUT ? true : assignedVariation.Variation.IsFeatureEnabled;
+
                         if (result)
                         {
                             if (this._BatchEventData != null)
@@ -397,7 +397,7 @@ namespace VWOSdk
                         }
                         return result;
                     }
-                    
+
                 }
                 else
                 {
@@ -587,7 +587,7 @@ namespace VWOSdk
 
                 return new UserAllocationInfo(TargettedVariation, campaign);
             }
-            UserStorageMap userStorageMap = this._userStorageService != null ?this._userStorageService.GetUserMap(campaignKey, userId, userStorageData) : null;
+            UserStorageMap userStorageMap = this._userStorageService != null ? this._userStorageService.GetUserMap(campaignKey, userId, userStorageData) : null;
             BucketedCampaign selectedCampaign = this._campaignAllocator.Allocate(this._settings, userStorageMap, campaignKey, userId, apiName);
             if (userStorageMap != null && userStorageMap.VariationName != null)
             {
@@ -749,7 +749,7 @@ namespace VWOSdk
 
                 string status = Constants.WhitelistingStatus.FAILED;
                 string variationString = " ";
-                Variation variation = this._variationAllocator.TargettedVariation(userId, whiteListedVariations);
+                Variation variation = this._variationAllocator.TargettedVariation(userId, campaign, whiteListedVariations);
                 if (variation != null)
                 {
                     status = Constants.WhitelistingStatus.PASSED;
