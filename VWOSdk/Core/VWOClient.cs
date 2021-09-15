@@ -38,15 +38,17 @@ namespace VWOSdk
         private readonly bool _shouldTrackReturningUser;
         private readonly BatchEventData _BatchEventData;
         private readonly BatchEventQueue _BatchEventQueue;
-        //Integration
-        private Dictionary<string, dynamic> integrationsMap;
-        private readonly HookManager _HookManager;
-
         private static readonly string sdkVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        //Integration
+        private Dictionary<string, dynamic> integrationsMap;      
+        private readonly HookManager _HookManager;
+        //UsageStats
+        private readonly Dictionary<string, int> _usageStats = new Dictionary<string, int>();       
         internal VWO(AccountSettings settings, IValidator validator, IUserStorageService userStorageService,
             ICampaignAllocator campaignAllocator, ISegmentEvaluator segmentEvaluator,
             IVariationAllocator variationAllocator, bool isDevelopmentMode, BatchEventData batchEventData,
-            string goalTypeToTrack = Constants.GoalTypes.ALL, bool shouldTrackReturningUser = false, HookManager hookManager = null)
+            string goalTypeToTrack = Constants.GoalTypes.ALL, bool shouldTrackReturningUser = false, HookManager hookManager = null,
+            Dictionary<string, int> usageStats=null)
         {
             this._settings = settings;
             this._validator = validator;
@@ -58,7 +60,8 @@ namespace VWOSdk
             this._goalTypeToTrack = goalTypeToTrack;
             this._shouldTrackReturningUser = shouldTrackReturningUser;
             this._BatchEventData = batchEventData;
-            this._BatchEventQueue = batchEventData != null ? new BatchEventQueue(batchEventData, settings.SdkKey, this._settings.AccountId, isDevelopmentMode) : null;
+            this._usageStats = usageStats;
+            this._BatchEventQueue = batchEventData != null ? new BatchEventQueue(batchEventData, settings.SdkKey, this._settings.AccountId, isDevelopmentMode, this._usageStats) : null;
             this._HookManager = hookManager;
         }
 
@@ -119,7 +122,7 @@ namespace VWOSdk
                     {
                         LogDebugMessage.EventBatchingNotActivated(typeof(IVWOClient).FullName, nameof(Activate));
                         var trackUserRequest = ServerSideVerb.TrackUser(this._settings.AccountId,
-                            assignedVariation.Campaign.Id, assignedVariation.Variation.Id, userId, this._isDevelopmentMode, _settings.SdkKey);
+                            assignedVariation.Campaign.Id, assignedVariation.Variation.Id, userId, this._isDevelopmentMode, _settings.SdkKey, this._usageStats);
                         trackUserRequest.ExecuteAsync();
                     }
 
@@ -386,7 +389,7 @@ namespace VWOSdk
                             {
                                 LogDebugMessage.EventBatchingNotActivated(typeof(IVWOClient).FullName, nameof(IsFeatureEnabled));
                                 var trackUserRequest = ServerSideVerb.TrackUser(this._settings.AccountId, assignedVariation.Campaign.Id,
-                                    assignedVariation.Variation.Id, userId, this._isDevelopmentMode, _settings.SdkKey);
+                                    assignedVariation.Variation.Id, userId, this._isDevelopmentMode, _settings.SdkKey,this._usageStats);
                                 trackUserRequest.ExecuteAsync();
                             }
                             LogInfoMessage.FeatureEnabledForUser(typeof(IVWOClient).FullName, campaignKey, userId, nameof(IsFeatureEnabled));

@@ -1,20 +1,22 @@
 ﻿#pragma warning disable 1587
-/**
- * Copyright 2019-2021 Wingify Software Pvt. Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 #pragma warning restore 1587
+using System.Collections.Generic;
+/**
+* Copyright 2019-2021 Wingify Software Pvt. Ltd.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*   http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 namespace VWOSdk
 {
     public partial class VWO
@@ -26,7 +28,7 @@ namespace VWOSdk
         private static readonly ISegmentEvaluator SegmentEvaluator;
         private static ISettingsProcessor SettingsProcessor;
         private static readonly string file = typeof(VWO).FullName;
-
+        private static Dictionary<string, int> _tmpUsageStats=new Dictionary<string, int>();
         /// <summary>
         /// Static Constructor to init default dependencies on application load.
         /// </summary>
@@ -47,8 +49,20 @@ namespace VWOSdk
         public static void Configure(ILogWriter logger)
         {
             AppContext.Configure(logger);
-        }
 
+            if (_tmpUsageStats != null)
+            {
+                if (logger != null)
+                {
+                    _tmpUsageStats.Add("cl", 1);
+                }
+            }
+            else
+            {
+                _tmpUsageStats = new Dictionary<string, int>();
+                _tmpUsageStats.Add("cl", 1);
+            }
+        }
         /// <summary>
         /// Configure LogLevel for application.
         /// </summary>
@@ -56,6 +70,18 @@ namespace VWOSdk
         public static void Configure(LogLevel logLevel)
         {
             AppContext.Configure(logLevel);
+            if (logLevel.Equals(LogLevel.ERROR))
+            {
+                return;
+            }
+            if (_tmpUsageStats != null)
+                _tmpUsageStats.Add("ll", 1);
+            else
+            {
+                _tmpUsageStats = new Dictionary<string, int>();
+                _tmpUsageStats.Add("ll", 1);
+            }
+
         }
 
         /// <summary>
@@ -136,24 +162,40 @@ namespace VWOSdk
         /// IVWOClient instance to call Activate, GetVariation and Track apis for given user and goal.
         /// </returns>
         public static IVWOClient Launch(Settings settingFile, bool isDevelopmentMode = false, IUserStorageService userStorageService = null,
-           BatchEventData batchData = null, string goalTypeToTrack = Constants.GoalTypes.ALL,
+           BatchEventData batchData = null, string goalTypeToTrack = null,
            bool shouldTrackReturningUser = false, HookManager integrations = null)
         {
             if (Validator.SettingsFile(settingFile))
             {
-
-
                 LogDebugMessage.ValidConfiguration(file);
                 AccountSettings accountSettings = SettingsProcessor.ProcessAndBucket(settingFile);
                 LogDebugMessage.SettingsFileProcessed(file);
                 if (accountSettings == null)
                     return null;
-
+                var usageStats = new Dictionary<string, int>();
+                if (_tmpUsageStats != null)
+                {
+                    usageStats = _tmpUsageStats;
+                    _tmpUsageStats = new Dictionary<string, int>();
+                }
+                if (userStorageService != null)
+                    usageStats.Add("ss", 1);
+                if (batchData != null)
+                    usageStats.Add("eb", 1);
+                if (goalTypeToTrack != null)
+                    usageStats.Add("gt", 1);
+                else
+                    goalTypeToTrack = Constants.GoalTypes.ALL;
+                if (shouldTrackReturningUser != false)
+                    usageStats.Add("tr", 1);
+                if (integrations != null)
+                    usageStats.Add("ig", 1);
                 if (isDevelopmentMode)
+                {
                     LogDebugMessage.SetDevelopmentMode(file);
-                //integration
-                var vwoClient = new VWO(accountSettings, Validator, userStorageService, CampaignAllocator, SegmentEvaluator,
-                    VariationAllocator, isDevelopmentMode, batchData, goalTypeToTrack, shouldTrackReturningUser, integrations);
+                    usageStats.Clear();
+                }           
+                var vwoClient = new VWO(accountSettings, Validator, userStorageService, CampaignAllocator, SegmentEvaluator, VariationAllocator, isDevelopmentMode, batchData, goalTypeToTrack, shouldTrackReturningUser, integrations, usageStats);
                 LogDebugMessage.SdkInitialized(file);
                 return vwoClient;
             }
