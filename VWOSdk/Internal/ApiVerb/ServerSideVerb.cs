@@ -89,7 +89,7 @@ namespace VWOSdk
         private static string GetUsageStatsQuery(Dictionary<string, int> usageStats)
         {
             string QueryStats = "";
-            if (usageStats != null && usageStats.Count!=0)
+            if (usageStats != null && usageStats.Count != 0)
             {
                 var listStats = new List<string>();
                 foreach (var item in usageStats)

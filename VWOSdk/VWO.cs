@@ -1,7 +1,4 @@
 ﻿#pragma warning disable 1587
-
-#pragma warning restore 1587
-using System.Collections.Generic;
 /**
 * Copyright 2019-2021 Wingify Software Pvt. Ltd.
 *
@@ -17,6 +14,8 @@ using System.Collections.Generic;
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#pragma warning restore 1587
+using System.Collections.Generic;
 namespace VWOSdk
 {
     public partial class VWO
@@ -28,7 +27,8 @@ namespace VWOSdk
         private static readonly ISegmentEvaluator SegmentEvaluator;
         private static ISettingsProcessor SettingsProcessor;
         private static readonly string file = typeof(VWO).FullName;
-        private static Dictionary<string, int> _tmpUsageStats=new Dictionary<string, int>();
+        private static Dictionary<string, int> _tmpUsageStats = new Dictionary<string, int>();
+        private static Dictionary<string, int> usageStats = new Dictionary<string, int>();
         /// <summary>
         /// Static Constructor to init default dependencies on application load.
         /// </summary>
@@ -172,7 +172,6 @@ namespace VWOSdk
                 LogDebugMessage.SettingsFileProcessed(file);
                 if (accountSettings == null)
                     return null;
-                var usageStats = new Dictionary<string, int>();
                 if (_tmpUsageStats != null)
                 {
                     usageStats = _tmpUsageStats;
@@ -194,13 +193,24 @@ namespace VWOSdk
                 {
                     LogDebugMessage.SetDevelopmentMode(file);
                     usageStats.Clear();
-                }           
-                var vwoClient = new VWO(accountSettings, Validator, userStorageService, CampaignAllocator, SegmentEvaluator, VariationAllocator, isDevelopmentMode, batchData, goalTypeToTrack, shouldTrackReturningUser, integrations, usageStats);
+                }
+                var vwoClient = new VWO(accountSettings, Validator, userStorageService, CampaignAllocator, SegmentEvaluator,
+                    VariationAllocator, isDevelopmentMode, batchData, goalTypeToTrack, shouldTrackReturningUser, integrations, usageStats);
                 LogDebugMessage.SdkInitialized(file);
                 return vwoClient;
             }
             LogErrorMessage.ProjectConfigCorrupted(file);
             return null;
+        }
+        /// <summary>
+        /// Get UsageStats for test cases.
+        /// </summary>        
+        /// <returns>
+        /// Get UsageStats for test cases.
+        /// </returns>
+        public static Dictionary<string, int> getUsageStats()
+        {
+            return usageStats;
         }
 
     }
