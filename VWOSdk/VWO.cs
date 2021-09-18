@@ -27,8 +27,8 @@ namespace VWOSdk
         private static readonly ISegmentEvaluator SegmentEvaluator;
         private static ISettingsProcessor SettingsProcessor;
         private static readonly string file = typeof(VWO).FullName;
-        private static Dictionary<string, int> _tmpUsageStats = new Dictionary<string, int>();
-        private static Dictionary<string, int> usageStats = new Dictionary<string, int>();
+        private static Dictionary<string, int> _tmpUsageStats;
+        private static Dictionary<string, int> usageStats;
         /// <summary>
         /// Static Constructor to init default dependencies on application load.
         /// </summary>
@@ -48,19 +48,10 @@ namespace VWOSdk
         /// <param name="logger">Custom logger instance to log from within the sdk. Null means default logger will be used.</param>
         public static void Configure(ILogWriter logger)
         {
-            AppContext.Configure(logger);
-
-            if (_tmpUsageStats != null)
+            if (logger != null)
             {
-                if (logger != null)
-                {
-                    _tmpUsageStats.Add("cl", 1);
-                }
-            }
-            else
-            {
-                _tmpUsageStats = new Dictionary<string, int>();
-                _tmpUsageStats.Add("cl", 1);
+                AppContext.Configure(logger);
+                SetUsageStats("cl");
             }
         }
         /// <summary>
@@ -71,17 +62,8 @@ namespace VWOSdk
         {
             AppContext.Configure(logLevel);
             if (logLevel.Equals(LogLevel.ERROR))
-            {
                 return;
-            }
-            if (_tmpUsageStats != null)
-                _tmpUsageStats.Add("ll", 1);
-            else
-            {
-                _tmpUsageStats = new Dictionary<string, int>();
-                _tmpUsageStats.Add("ll", 1);
-            }
-
+            SetUsageStats("ll");
         }
 
         /// <summary>
@@ -100,7 +82,20 @@ namespace VWOSdk
         {
             SettingsProcessor = settingsProcessor;
         }
-
+        /// <summary>
+        /// This is for set usage stats. Not to be exposed publicly.
+        /// </summary>
+        /// <param name="key"></param>
+        internal static void SetUsageStats(string key)
+        {
+            if (_tmpUsageStats != null && !_tmpUsageStats.TryGetValue(key, out int val))
+                _tmpUsageStats.Add(key, 1);
+            else
+            {
+                _tmpUsageStats = new Dictionary<string, int>();
+                _tmpUsageStats.Add(key, 1);
+            }
+        }
         /// <summary>
         /// Fetch SettingsFile for provided accountId and sdkKey.
         /// </summary>
@@ -172,22 +167,23 @@ namespace VWOSdk
                 LogDebugMessage.SettingsFileProcessed(file);
                 if (accountSettings == null)
                     return null;
+                usageStats = new Dictionary<string, int>();
                 if (_tmpUsageStats != null)
                 {
                     usageStats = _tmpUsageStats;
                     _tmpUsageStats = new Dictionary<string, int>();
                 }
-                if (userStorageService != null)
+                if (userStorageService != null && !_tmpUsageStats.TryGetValue("ss", out int ss))
                     usageStats.Add("ss", 1);
-                if (batchData != null)
+                if (batchData != null && !_tmpUsageStats.TryGetValue("eb", out int eb))
                     usageStats.Add("eb", 1);
-                if (goalTypeToTrack != null)
+                if (goalTypeToTrack != null && !_tmpUsageStats.TryGetValue("gt", out int gt))
                     usageStats.Add("gt", 1);
                 else
                     goalTypeToTrack = Constants.GoalTypes.ALL;
-                if (shouldTrackReturningUser != false)
+                if (shouldTrackReturningUser != false && !_tmpUsageStats.TryGetValue("tr", out int tr))
                     usageStats.Add("tr", 1);
-                if (integrations != null)
+                if (integrations != null && !_tmpUsageStats.TryGetValue("ig", out int ig))
                     usageStats.Add("ig", 1);
                 if (isDevelopmentMode)
                 {
@@ -206,7 +202,7 @@ namespace VWOSdk
         /// Get UsageStats for test cases.
         /// </summary>        
         /// <returns>
-        /// Get UsageStats for test cases.
+        /// UsageStats for test cases.
         /// </returns>
         public static Dictionary<string, int> getUsageStats()
         {

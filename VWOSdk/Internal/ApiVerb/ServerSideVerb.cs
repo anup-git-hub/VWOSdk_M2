@@ -148,7 +148,6 @@ namespace VWOSdk
                 $"&{GetRandomQuery()}" +
                 $"&{GetUnixTimeStamp()}" +
                 $"&{GetUuidQuery(userId, accountId)}" +
-                $"&{GetUserIdQuery(userId)}" +
                 $"&{GetGoalIdQuery(goalId)}" +
                 $"&{GetRevenueQuery(revenueValue)}" +
                 $"&{GetSdkQuery()}";
@@ -159,8 +158,7 @@ namespace VWOSdk
                 $"&{GetPlatformQuery()}" +
                 $"&{GetRandomQuery()}" +
                 $"&{GetUnixTimeStamp()}" +
-                $"&{GetUuidQuery(userId, settings.AccountId)}" +
-                $"&{GetUserIdQuery(userId)}" +
+                $"&{GetUuidQuery(userId, settings.AccountId)}" +              
                 $"&{GetUserTagQuery(tagKey, tagValue)}" +
                 $"&{GetSdkQuery()}";
         }
@@ -195,8 +193,7 @@ namespace VWOSdk
                 $"&{GetCombination(variationId)}" +
                 $"&{GetRandomQuery()}" +
                 $"&{GetUnixTimeStamp()}" +
-                $"&{GetUuidQuery(userId, accountId)}" +
-                $"&{GetUserIdQuery(userId)}" +
+                $"&{GetUuidQuery(userId, accountId)}" +             
                 $"&{GetEdQuery()}" +
                 $"{GetUsageStatsQuery(usageStats)}" +
                 $"&{GetSdkQuery()}";
