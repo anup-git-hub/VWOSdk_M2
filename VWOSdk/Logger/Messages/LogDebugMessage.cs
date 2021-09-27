@@ -182,6 +182,9 @@ namespace VWOSdk
         {
             Log.Debug($"({file}): Variation not found for campaign:{campaignKey} and userId:{userId}");
         }
-       
+        public static void GotEligibleCampaigns(string file, string groupName, string userId, string eligibleText, string inEligibleText)
+        {
+            Log.Debug($"({file}): Got eligible campaigns for Group Name:{groupName} and userId:{userId} .Eligible campaigns:{eligibleText}.Ineligible campaigns:{inEligibleText}.");
+        }
     }
 }

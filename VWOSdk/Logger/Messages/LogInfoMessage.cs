@@ -142,7 +142,15 @@ namespace VWOSdk
         {
             Log.Info($"({file}): Unable to fetch data from user storage for{campaignKey} for User ID:{userId}.");
         }
-
+        public static void CalledCampaignNotWinner(string file, string campaignKey, string userId,string groupName)
+        {
+            Log.Info($"({file}): Called campaign is not winner for {campaignKey} , User ID:{userId} Group Name:{groupName}.");
+        }
+        public static void GotEligibleCampaigns(string file, string groupName, string userId, string noOfEligibleCampaigns, string noOfGroupCampaigns)
+        {
+            Log.Info($"({file}): Got eligible campaigns for Group Name:{groupName} and userId:{userId} .No Of Group Campaigns:{noOfGroupCampaigns}.No Of Eligible Campaigns:{noOfEligibleCampaigns}.");
+        }
+       
     }
 
 }
