@@ -54,11 +54,9 @@ namespace VWOSdk
                 settings.getGroups().TryGetValue(groupId.ToString(), out Groups group);
                 groupDetails["groupId"] = groupId;
                 groupDetails["groupName"] = group.Name;
-                return groupDetails;
             }
             return groupDetails;
         }
-
         /*
          * Get the list of campaigns on the basis of their id.
          *
@@ -66,7 +64,6 @@ namespace VWOSdk
          * @param groupId     - group id
          * @return list of campaigns
          */
-
         public static List<BucketedCampaign> getGroupCampaigns(AccountSettings settings, int groupId)
         {
             List<BucketedCampaign> campaignList = new List<BucketedCampaign>();
@@ -84,7 +81,6 @@ namespace VWOSdk
             }
             return campaignList;
         }
-
         /*
          * Get the campaign on the basis of campaign id.
          *
@@ -92,13 +88,9 @@ namespace VWOSdk
          * @param campaignId    - Campaign id
          * @return Campaign object.
          */
-
         private static BucketedCampaign getCampaignBasedOnId(AccountSettings settings, int campaignId)
         {
             BucketedCampaign campaign = null;
-
-           
-
             foreach (BucketedCampaign eachCampaign in settings.Campaigns)
             {
                 if (eachCampaign.Id == campaignId)
@@ -119,15 +111,12 @@ namespace VWOSdk
         */
         public static BucketedCampaign getAllocatedItem(List<BucketedCampaign> itemList, double hashValue)
         {
-
             foreach (BucketedCampaign item in itemList)
             {
-
                 if (hashValue >= item.StartRange && hashValue <= item.EndRange)
                 {
                     return item;
                 }
-
             }
             return null;
         }

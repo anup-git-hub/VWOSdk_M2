@@ -575,8 +575,7 @@ namespace VWOSdk
         Dictionary<string, dynamic> userStorageData = null, bool shouldTrackReturningUser = false, bool initIntegration = false)
         {
             Dictionary<string, dynamic> integrationsMap = new Dictionary<string, dynamic>();
-            Variation TargettedVariation = this.FindTargetedVariation(apiName, campaign, campaignKey, userId, customVariables,
-                variationTargetingVariables);
+            Variation TargettedVariation = this.FindTargetedVariation(apiName, campaign, campaignKey, userId, customVariables, variationTargetingVariables);
             if (TargettedVariation != null)
             {
                 if (_HookManager != null)
@@ -594,7 +593,6 @@ namespace VWOSdk
             }
             UserStorageMap userStorageMap = this._userStorageService != null ? this._userStorageService.GetUserMap(campaignKey, userId, userStorageData) : null;
             BucketedCampaign selectedCampaign = this._campaignAllocator.Allocate(this._settings, userStorageMap, campaignKey, userId, apiName);
-
             if (userStorageMap != null && userStorageMap.VariationName != null)
             {
                 Variation variation = this._variationAllocator.GetSavedVariation(campaign, userStorageMap.VariationName.ToString());
@@ -627,70 +625,66 @@ namespace VWOSdk
                     LogInfoMessage.NoDataUserStorageService(file, campaignKey, userId);
                 }
             }
-
-            // Mutually Exclusive Group
-            IDictionary<string, dynamic> groupDetails = CampaignHelper.isPartOfGroup(this._settings, campaign.Id);
-            if (groupDetails.ContainsKey("groupId"))
+            if (selectedCampaign != null)
             {
-                dynamic groupId = 0, groupName = "";
-                if (groupDetails.Count > 0)
+                return evaluateTrafficAndGetVariation(selectedCampaign, campaign, userStorageMap, customVariables, campaignKey, apiName, variationTargetingVariables, initIntegration, userId);
+            }
+            else
+            {
+                // Mutually Exclusive Group
+                IDictionary<string, dynamic> groupDetails = CampaignHelper.isPartOfGroup(this._settings, campaign.Id);
+                if (groupDetails.ContainsKey("groupId"))
                 {
+                    dynamic groupId = 0, groupName = "";
                     groupDetails.TryGetValue("groupId", out groupId);
                     groupDetails.TryGetValue("groupName", out groupName);
                     integrationsMap.Add("groupId", groupId);
                     integrationsMap.Add("groupName", groupName);
-                }
-                List<BucketedCampaign> campaignList = CampaignHelper.getGroupCampaigns(this._settings, Convert.ToInt32(groupId));
-                if (campaignList.Count == 0)
-                {
-                    return new UserAllocationInfo();
-                }
-                if (checkForStorageAndWhitelisting(apiName, campaignList, groupName, campaign, userId, null,
-                    shouldTrackReturningUser, variationTargetingVariables, customVariables, userStorageData = null))
-                {
-                    LogInfoMessage.CalledCampaignNotWinner(file, campaignKey, userId, groupName.ToString());
-                    return new UserAllocationInfo();
-                }
-                Dictionary<string, dynamic> processedCampaigns = getEligibleCampaigns(campaignList, userId, customVariables);
-                processedCampaigns.TryGetValue("eligibleCampaigns", out dynamic eligibleCampaigns);
-                processedCampaigns.TryGetValue("inEligibleCampaigns", out dynamic inEligibleCampaigns);
-                StringBuilder eligibleCampaignKeys = new StringBuilder();
-                foreach (BucketedCampaign eachCampaign in eligibleCampaigns)
-                {
-                    eligibleCampaignKeys.Append(eachCampaign.Key).Append(", ");
-                }
-                StringBuilder inEligibleCampaignKeys = new StringBuilder();
-                foreach (BucketedCampaign eachCampaign in inEligibleCampaigns)
-                {
-                    inEligibleCampaignKeys.Append(eachCampaign.Key).Append(", ");
-                }
-                string finalInEligibleCampaignKeys = inEligibleCampaignKeys.ToString();
-                string finalEligibleCampaignKeys = eligibleCampaignKeys.ToString();
+                    List<BucketedCampaign> campaignList = CampaignHelper.getGroupCampaigns(this._settings, Convert.ToInt32(groupId));
+                    if (campaignList.Count == 0)
+                        return new UserAllocationInfo();
+                    if (checkForStorageAndWhitelisting(apiName, campaignList, groupName, campaign, userId, null,
+                        shouldTrackReturningUser, variationTargetingVariables, customVariables, userStorageData = null, true))
+                    {
+                        LogInfoMessage.CalledCampaignNotWinner(file, campaignKey, userId, groupName.ToString());
+                        return new UserAllocationInfo();
+                    }
+                    Dictionary<string, dynamic> processedCampaigns = getEligibleCampaigns(campaignList, userId, customVariables);
+                    processedCampaigns.TryGetValue("eligibleCampaigns", out dynamic eligibleCampaigns);
+                    processedCampaigns.TryGetValue("inEligibleCampaigns", out dynamic inEligibleCampaigns);
+                    StringBuilder eligibleCampaignKeys = new StringBuilder();
+                    foreach (BucketedCampaign eachCampaign in eligibleCampaigns)
+                    {
+                        eligibleCampaignKeys.Append(eachCampaign.Key).Append(", ");
+                    }
+                    StringBuilder inEligibleCampaignKeys = new StringBuilder();
+                    foreach (BucketedCampaign eachCampaign in inEligibleCampaigns)
+                    {
+                        inEligibleCampaignKeys.Append(eachCampaign.Key).Append(", ");
+                    }
+                    string finalInEligibleCampaignKeys = inEligibleCampaignKeys.ToString();
+                    string finalEligibleCampaignKeys = eligibleCampaignKeys.ToString();
 
-                LogDebugMessage.GotEligibleCampaigns(file, groupName.ToString(), userId, finalEligibleCampaignKeys.TrimEnd(new char[] { ',', ' ' }), finalInEligibleCampaignKeys.TrimEnd(new char[] { ',', ' ' }));
-                LogInfoMessage.GotEligibleCampaigns(file, groupName.ToString(), userId, ((List<BucketedCampaign>)eligibleCampaigns).Count.ToString(), campaignList.Count.ToString());
-                if (((List<BucketedCampaign>)eligibleCampaigns).Count == 1)
-                {
-                    return evaluateTrafficAndGetVariation(((List<BucketedCampaign>)eligibleCampaigns)[0], campaign, userStorageMap, customVariables, campaignKey, apiName,
-                        variationTargetingVariables, initIntegration, userId);
-                }
-                else if (((List<BucketedCampaign>)eligibleCampaigns).Count > 1)
-                {
-                    return normalizeAndFindWinningCampaign((List<BucketedCampaign>)eligibleCampaigns, campaign, userStorageMap,
-                        customVariables, campaignKey, apiName, variationTargetingVariables, initIntegration, userId, groupName.ToString(), groupId.ToString());
-                }
-                else
-                {
-                    return new UserAllocationInfo();
+                    LogDebugMessage.GotEligibleCampaigns(file, groupName.ToString(), userId, finalEligibleCampaignKeys.TrimEnd(new char[] { ',', ' ' }), finalInEligibleCampaignKeys.TrimEnd(new char[] { ',', ' ' }));
+                    LogInfoMessage.GotEligibleCampaigns(file, groupName.ToString(), userId, ((List<BucketedCampaign>)eligibleCampaigns).Count.ToString(), campaignList.Count.ToString());
+                    if (((List<BucketedCampaign>)eligibleCampaigns).Count == 1)
+                    {
+                        return evaluateTrafficAndGetVariation(((List<BucketedCampaign>)eligibleCampaigns)[0], campaign, userStorageMap, customVariables, campaignKey, apiName,
+                            variationTargetingVariables, initIntegration, userId);
+                    }
+                    else if (((List<BucketedCampaign>)eligibleCampaigns).Count > 1)
+                    {
+                        return normalizeAndFindWinningCampaign((List<BucketedCampaign>)eligibleCampaigns, campaign, userStorageMap,
+                            customVariables, campaignKey, apiName, variationTargetingVariables, initIntegration, userId, groupName.ToString(), groupId.ToString(), true);
+                    }
+                    else
+                        return new UserAllocationInfo();
                 }
             }
-            else
-            {
-                return evaluateTrafficAndGetVariation(selectedCampaign, campaign, userStorageMap, customVariables, campaignKey, apiName, variationTargetingVariables, initIntegration, userId);
-            }
+            return new UserAllocationInfo();
         }
         private UserAllocationInfo evaluateTrafficAndGetVariation(BucketedCampaign selectedCampaign, BucketedCampaign campaign, UserStorageMap userStorageMap, Dictionary<string, dynamic> customVariables,
-           string campaignKey, string apiName, Dictionary<string, dynamic> variationTargetingVariables, bool initIntegration, string userId)
+           string campaignKey, string apiName, Dictionary<string, dynamic> variationTargetingVariables, bool initIntegration, string userId, bool disableLogs = false)
         {
             if (selectedCampaign != null)
             {
@@ -746,7 +740,7 @@ namespace VWOSdk
         }
         private UserAllocationInfo normalizeAndFindWinningCampaign(List<BucketedCampaign> shortlistedCampaigns, BucketedCampaign calledCampaign,
             UserStorageMap userStorageMap, Dictionary<string, dynamic> customVariables,
-           string campaignKey, string apiName, Dictionary<string, dynamic> variationTargetingVariables, bool initIntegration, string userId, string groupName, string groupId)
+           string campaignKey, string apiName, Dictionary<string, dynamic> variationTargetingVariables, bool initIntegration, string userId, string groupName, string groupId, bool disableLogs = false)
         {
             int currentAllocation = 0;
             foreach (BucketedCampaign campaign in shortlistedCampaigns)
@@ -765,13 +759,14 @@ namespace VWOSdk
             BucketedCampaign winnerCampaign = CampaignHelper.getAllocatedItem(shortlistedCampaigns, bucketValue);
             if (winnerCampaign != null && winnerCampaign.Id.Equals(calledCampaign.Id))
             {
+                LogInfoMessage.GotWinnerCampaign(file, campaignKey, userId, groupName.ToString(), disableLogs);
                 return evaluateTrafficAndGetVariation(winnerCampaign, calledCampaign, userStorageMap, customVariables, campaignKey, apiName, variationTargetingVariables, initIntegration, userId);
             }
             else
             {
+                LogInfoMessage.CalledCampaignNotWinner(file, campaignKey, userId, groupName.ToString(), disableLogs);
                 return new UserAllocationInfo();
             }
-
         }
 
         private Dictionary<string, dynamic> getEligibleCampaigns(List<BucketedCampaign> campaignList, string userId, Dictionary<string, dynamic> customVariables)
@@ -840,7 +835,7 @@ namespace VWOSdk
         private bool checkForStorageAndWhitelisting(string apiName, List<BucketedCampaign> campaignList, string groupName,
             BucketedCampaign calledCampaign, string userId, string goalIdentifier,
             bool? shouldTrackReturningUser, Dictionary<string, dynamic> variationTargetingVariables,
-            Dictionary<string, dynamic> customVariables, Dictionary<string, dynamic> userStorageData = null)
+            Dictionary<string, dynamic> customVariables, Dictionary<string, dynamic> userStorageData = null, bool disableLogs = false)
         {
             bool otherCampaignWinner = false;
             foreach (BucketedCampaign campaign in campaignList)
@@ -849,9 +844,7 @@ namespace VWOSdk
                 {
                     continue;
                 }
-                //
-                List<Variation> whiteListedVariations = this.GetWhiteListedVariationsList(apiName, userId, campaign, campaign.Key, customVariables, variationTargetingVariables);
-
+                List<Variation> whiteListedVariations = this.GetWhiteListedVariationsList(apiName, userId, campaign, campaign.Key, customVariables, variationTargetingVariables, disableLogs);
                 string status = Constants.WhitelistingStatus.FAILED;
                 string variationString = " ";
                 Variation variation = this._variationAllocator.TargettedVariation(userId, campaign, whiteListedVariations);
@@ -860,35 +853,33 @@ namespace VWOSdk
                     status = Constants.WhitelistingStatus.PASSED;
                     variationString = $"and variation: {variation.Name} is assigned";
                     otherCampaignWinner = true;
+                    LogInfoMessage.OtherCampaignSatisfiesWhitelistingStorage(file, groupName, userId, campaign.Key, "whitelisting", disableLogs);
                     break;
                 }
-
                 UserStorageMap userStorageMap = this._userStorageService != null ? this._userStorageService.GetUserMap(campaign.Key, userId, userStorageData) : null;
-
                 if (userStorageMap != null && userStorageMap.VariationName != null)
                 {
                     Variation storedVariation = this._variationAllocator.GetSavedVariation(campaign, userStorageMap.VariationName.ToString());
-
                     otherCampaignWinner = true;
+                    LogInfoMessage.OtherCampaignSatisfiesWhitelistingStorage(file, groupName, userId, campaign.Key, "user storage", disableLogs);
                     break;
                 }
-
             }
             return otherCampaignWinner;
         }
 
-        private bool isCampaignActivated(string apiName, string userId, Campaign campaign)
+        private bool isCampaignActivated(string apiName, string userId, Campaign campaign, bool disableLogs = false)
         {
             if (!apiName.Equals(Constants.CampaignTypes.ACTIVATE, StringComparison.InvariantCultureIgnoreCase)
               && !apiName.Equals(Constants.CampaignTypes.IS_FEATURE_ENABLED, StringComparison.InvariantCultureIgnoreCase))
             {
-                LogDebugMessage.CampaignNotActivated(file, apiName, campaign.Key, userId);
-                LogInfoMessage.CampaignNotActivated(file, apiName.Equals(Constants.CampaignTypes.TRACK, StringComparison.InvariantCultureIgnoreCase) ? "track it" : "get the decision/value", campaign.Key, userId);
+                LogDebugMessage.CampaignNotActivated(file, apiName, campaign.Key, userId, disableLogs);
+                LogInfoMessage.CampaignNotActivated(file, apiName.Equals(Constants.CampaignTypes.TRACK, StringComparison.InvariantCultureIgnoreCase) ? "track it" : "get the decision/value", campaign.Key, userId, disableLogs);
                 return false;
             }
             return true;
         }
-        private Variation FindTargetedVariation(string apiName, BucketedCampaign campaign, string campaignKey, string userId, Dictionary<string, dynamic> customVariables, Dictionary<string, dynamic> variationTargetingVariables)
+        private Variation FindTargetedVariation(string apiName, BucketedCampaign campaign, string campaignKey, string userId, Dictionary<string, dynamic> customVariables, Dictionary<string, dynamic> variationTargetingVariables, bool disableLogs = false)
         {
             if (campaign.IsForcedVariationEnabled)
             {
@@ -908,7 +899,7 @@ namespace VWOSdk
                         variationTargetingVariables.Add("_vwoUserId", userId);
                     }
                 }
-                List<Variation> whiteListedVariations = this.GetWhiteListedVariationsList(apiName, userId, campaign, campaignKey, customVariables, variationTargetingVariables);
+                List<Variation> whiteListedVariations = this.GetWhiteListedVariationsList(apiName, userId, campaign, campaignKey, customVariables, variationTargetingVariables, disableLogs);
 
                 string status = Constants.WhitelistingStatus.FAILED;
                 string variationString = " ";
@@ -918,13 +909,13 @@ namespace VWOSdk
                     status = Constants.WhitelistingStatus.PASSED;
                     variationString = $"and variation: {variation.Name} is assigned";
                 }
-                LogInfoMessage.WhitelistingStatus(typeof(IVWOClient).FullName, userId, campaignKey, apiName, variationString, status);
+                LogInfoMessage.WhitelistingStatus(typeof(IVWOClient).FullName, userId, campaignKey, apiName, variationString, status, disableLogs);
                 return variation;
             }
-            LogInfoMessage.SkippingWhitelisting(typeof(IVWOClient).FullName, userId, campaignKey, apiName);
+            LogInfoMessage.SkippingWhitelisting(typeof(IVWOClient).FullName, userId, campaignKey, apiName, disableLogs);
             return null;
         }
-        private List<Variation> GetWhiteListedVariationsList(string apiName, string userId, BucketedCampaign campaign, string campaignKey, Dictionary<string, dynamic> customVariables, Dictionary<string, dynamic> variationTargetingVariables)
+        private List<Variation> GetWhiteListedVariationsList(string apiName, string userId, BucketedCampaign campaign, string campaignKey, Dictionary<string, dynamic> customVariables, Dictionary<string, dynamic> variationTargetingVariables, bool disableLogs = false)
         {
             List<Variation> result = new List<Variation> { };
             foreach (var variation in campaign.Variations.All())
@@ -933,7 +924,7 @@ namespace VWOSdk
                 string segmentationType = Constants.SegmentationType.WHITELISTING;
                 if (variation.Segments.Count == 0)
                 {
-                    LogDebugMessage.SkippingSegmentation(typeof(IVWOClient).FullName, userId, campaignKey, apiName, variation.Name);
+                    LogDebugMessage.SkippingSegmentation(typeof(IVWOClient).FullName, userId, campaignKey, apiName, variation.Name, disableLogs);
                 }
                 else
                 {
@@ -942,7 +933,7 @@ namespace VWOSdk
                         status = Constants.SegmentationStatus.PASSED;
                         result.Add(variation);
                     }
-                    LogDebugMessage.SegmentationStatus(typeof(IVWOClient).FullName, userId, campaignKey, apiName, variation.Name, status);
+                    LogDebugMessage.SegmentationStatus(typeof(IVWOClient).FullName, userId, campaignKey, apiName, variation.Name, status, disableLogs);
                 }
 
             }
