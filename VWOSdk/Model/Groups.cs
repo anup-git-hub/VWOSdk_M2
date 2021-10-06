@@ -29,7 +29,7 @@ namespace VWOSdk
             this.Name = Name;          
             this.Campaigns = campaigns;          
         }
-        public IReadOnlyList<int> Campaigns { get; internal set; }
+        public List<int> Campaigns { get; internal set; }
         public string Name { get; internal set; }
        
     }

@@ -37,7 +37,7 @@ namespace VWOSdk
         }
 
         public string SdkKey { get; internal set; }
-        public IReadOnlyList<Campaign> Campaigns { get; internal set; }
+        public List<Campaign> Campaigns { get; internal set; }
         public Dictionary<string, dynamic> CampaignGroups { get; internal set; }
         public Dictionary<string,Groups> Groups { get; internal set; }
         public int AccountId { get; internal set; }
@@ -50,9 +50,22 @@ namespace VWOSdk
         {
             return Groups;
         }
-        public IReadOnlyList<Campaign> getCampaigns()
+        public List<Campaign> getCampaigns()
         {
             return Campaigns;
+        }
+
+        public void setCampaignGroups(string key,dynamic value)
+        {
+            if (this.CampaignGroups.ContainsKey(key))
+            {
+                this.CampaignGroups[key] = value;
+            }
+            else
+            {
+                this.CampaignGroups.Add(key, value);
+            }
+          
         }
     }
 }
