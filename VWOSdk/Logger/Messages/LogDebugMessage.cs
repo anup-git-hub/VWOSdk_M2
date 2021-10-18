@@ -107,7 +107,7 @@ namespace VWOSdk
         }
         public static void SegmentationStatus(string file, string userId, string campaignKey, string apiName, string variationName, string status, bool disableLogs = false)
         {
-            Log.Debug($"({file}): In API: {apiName}, Whitelisting for UserId:{userId} in campaing:{campaignKey} for variation: {variationName} is: {status}, disableLogs");
+            Log.Debug($"({file}): In API: {apiName}, Whitelisting for UserId:{userId} in campaing:{campaignKey} for variation: {variationName} is: {status}", disableLogs);
         }
 
 

@@ -26,7 +26,7 @@ namespace VWOSdk
 
 
         [JsonConstructor]
-        internal Settings(string sdkKey, List<Campaign> campaigns,  int accountId, int version,Dictionary<string, Groups> groups, Dictionary<string, dynamic>campaignGroups)
+        internal Settings(string sdkKey, List<Campaign> campaigns, int accountId, int version, Dictionary<string, Groups> groups, Dictionary<string, dynamic> campaignGroups)
         {
             this.SdkKey = sdkKey;
             this.Campaigns = campaigns;
@@ -39,7 +39,7 @@ namespace VWOSdk
         public string SdkKey { get; internal set; }
         public List<Campaign> Campaigns { get; internal set; }
         public Dictionary<string, dynamic> CampaignGroups { get; internal set; }
-        public Dictionary<string,Groups> Groups { get; internal set; }
+        public Dictionary<string, Groups> Groups { get; internal set; }
         public int AccountId { get; internal set; }
         public int Version { get; internal set; }
         public Dictionary<string, dynamic> getCampaignGroups()
@@ -53,19 +53,6 @@ namespace VWOSdk
         public List<Campaign> getCampaigns()
         {
             return Campaigns;
-        }
-
-        public void setCampaignGroups(string key,dynamic value)
-        {
-            if (this.CampaignGroups.ContainsKey(key))
-            {
-                this.CampaignGroups[key] = value;
-            }
-            else
-            {
-                this.CampaignGroups.Add(key, value);
-            }
-          
         }
     }
 }
