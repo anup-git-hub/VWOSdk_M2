@@ -447,26 +447,6 @@ namespace VWOSdk.Tests
             Assert.False(VWO.getUsageStats().TryGetValue("cl", out int is_cl));
             Assert.False(VWO.getUsageStats().TryGetValue("ll", out int is_ll));
         }
-        //[Fact]
-        //public void alongWithShouldTrackReturningUser()
-        //{
-        //    var validSettings = new FileReaderApiCaller().Execute<Settings>(null);
-        //    var mockValidator = Mock.GetValidator();
-        //    VWO.Configure(mockValidator.Object);
-        //    var mockSettingProcessor = Mock.GetSettingsProcessor();
-        //    VWO.Configure(mockSettingProcessor.Object);
-        //    var vwoClient = VWO.Launch(validSettings, shouldTrackReturningUser: true);
-        //    Assert.NotNull(vwoClient);
-        //    Assert.False(VWO.getUsageStats() == null);
-        //    Assert.False(VWO.getUsageStats().TryGetValue("ss", out int is_ss));
-        //    Assert.False(VWO.getUsageStats().TryGetValue("ig", out int is_ig));
-        //    Assert.False(VWO.getUsageStats().TryGetValue("eb", out int is_eb));
-        //    Assert.False(VWO.getUsageStats().TryGetValue("gt", out int is_gt));
-        //    Assert.True(VWO.getUsageStats().TryGetValue("tr", out int is_tr));
-        //    Assert.Equal(1, is_tr);
-        //    Assert.False(VWO.getUsageStats().TryGetValue("cl", out int is_cl));
-        //    Assert.False(VWO.getUsageStats().TryGetValue("ll", out int is_ll));
-        //}
         [Fact]
         public void alongWithEventBatching()
         {

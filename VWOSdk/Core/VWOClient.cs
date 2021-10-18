@@ -35,8 +35,7 @@ namespace VWOSdk
         private readonly AccountSettings _settings;
         private readonly IValidator _validator;
         private readonly bool _isDevelopmentMode;
-        private readonly string _goalTypeToTrack;
-        // private readonly bool _shouldTrackReturningUser;
+        private readonly string _goalTypeToTrack;      
         private readonly BatchEventData _BatchEventData;
         private readonly BatchEventQueue _BatchEventQueue;
         private static readonly string sdkVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -100,7 +99,7 @@ namespace VWOSdk
                 }
 
                 var assignedVariation = this.AllocateVariation(campaignKey, userId, campaign, customVariables,
-                    variationTargetingVariables, apiName: nameof(Activate), userStorageData);//shouldTrackReturningUser
+                    variationTargetingVariables, apiName: nameof(Activate), userStorageData);
                 if (assignedVariation.Variation != null)
                 {
                     if (assignedVariation.DuplicateCall)
@@ -213,7 +212,7 @@ namespace VWOSdk
                     return false;
                 }
                 var assignedVariation = this.AllocateVariation(campaignKey, userId, campaign, customVariables,
-                         variationTargetingVariables, goalIdentifier: goalIdentifier, apiName: nameof(Track), userStorageData);//shouldTrackReturningUser
+                         variationTargetingVariables, goalIdentifier: goalIdentifier, apiName: nameof(Track), userStorageData);
                 var variationName = assignedVariation.Variation?.Name;
                 var selectedGoalIdentifier = assignedVariation.Goal?.Identifier;
                 if (string.IsNullOrEmpty(variationName) == false)
@@ -224,7 +223,7 @@ namespace VWOSdk
                         {
                             return false;
                         }
-                        if (!this.isGoalTriggerRequired(campaignKey, userId, goalIdentifier, variationName, userStorageData))//shouldTrackReturningUser
+                        if (!this.isGoalTriggerRequired(campaignKey, userId, goalIdentifier, variationName, userStorageData))
                         {
                             return false;
                         }
@@ -342,8 +341,7 @@ namespace VWOSdk
         public bool IsFeatureEnabled(string campaignKey, string userId, Dictionary<string, dynamic> options = null)
         {
             if (options == null) options = new Dictionary<string, dynamic>();
-            Dictionary<string, dynamic> userStorageData = options.ContainsKey("userStorageData") ? options["userStorageData"] : null;
-            // bool shouldTrackReturningUser = options.ContainsKey("shouldTrackReturningUser") ? options["shouldTrackReturningUser"] : this._shouldTrackReturningUser;
+            Dictionary<string, dynamic> userStorageData = options.ContainsKey("userStorageData") ? options["userStorageData"] : null;         
             Dictionary<string, dynamic> customVariables = options.ContainsKey("customVariables") ? options["customVariables"] : null;
             Dictionary<string, dynamic> variationTargetingVariables = options.ContainsKey("variationTargetingVariables") ? options["variationTargetingVariables"] : null;
             if (this._validator.IsFeatureEnabled(campaignKey, userId, options))
@@ -363,7 +361,7 @@ namespace VWOSdk
                     variationTargetingVariables, apiName: nameof(IsFeatureEnabled), userStorageData);
                 if (assignedVariation.Variation != null)
                 {
-                    if (assignedVariation.DuplicateCall)//&& !shouldTrackReturningUser
+                    if (assignedVariation.DuplicateCall)
                     {
                         LogDebugMessage.DuplicateCall(typeof(IVWOClient).FullName, nameof(IsFeatureEnabled));
                         return false;
@@ -635,8 +633,8 @@ namespace VWOSdk
                 List<BucketedCampaign> campaignList = CampaignHelper.getGroupCampaigns(this._settings, Convert.ToInt32(groupId));
                 if (campaignList.Count == 0)
                     return new UserAllocationInfo();
-                if (checkForStorageAndWhitelisting(apiName, campaignList, groupName, campaign, userId, null,
-                    variationTargetingVariables, customVariables, userStorageData = null, true))//shouldTrackReturningUser
+                if (CampaignHelper.checkForStorageAndWhitelisting(this._variationAllocator, this._userStorageService, this._segmentEvaluator, file, apiName, campaignList, groupName, campaign, userId,
+              variationTargetingVariables, customVariables, userStorageData, true))
                 {
                     LogInfoMessage.CalledCampaignNotWinner(file, campaignKey, userId, groupName.ToString());
                     return new UserAllocationInfo();
@@ -852,15 +850,14 @@ namespace VWOSdk
         /// <param name="customVariables"></param>
         /// <param name="variationTargetingVariables"></param>
         /// <param name="apiName"></param>
-        /// <param name="userStorageData"></param>
-        /// <param name="shouldTrackReturningUser"></param>
+        /// <param name="userStorageData"></param>       
         /// <returns>
         /// If Variation is allocated and goal with given identifier is found, return UserAssignedInfo with valid information, otherwise, Empty UserAssignedInfo object.
         /// </returns>
 
         private UserAllocationInfo AllocateVariation(string campaignKey, string userId, BucketedCampaign campaign,
         Dictionary<string, dynamic> customVariables, Dictionary<string, dynamic> variationTargetingVariables, string goalIdentifier, string apiName,
-        Dictionary<string, dynamic> userStorageData = null, bool shouldTrackReturningUser = false)
+        Dictionary<string, dynamic> userStorageData = null)
         {
             if (_HookManager != null)
             {
@@ -868,7 +865,7 @@ namespace VWOSdk
                 LogDebugMessage.InitIntegrationMapForGoal(file, apiName, campaign.Key, userId);
             }
             var userAllocationInfo = this.AllocateVariation(campaignKey, userId, campaign, customVariables,
-                variationTargetingVariables, apiName, userStorageData, true);//shouldTrackReturningUser
+                variationTargetingVariables, apiName, userStorageData, true);
             if (userAllocationInfo.Variation != null)
             {
                 if (userAllocationInfo.Campaign.Goals.TryGetValue(goalIdentifier, out Goal goal))
