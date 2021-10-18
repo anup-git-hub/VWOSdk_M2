@@ -206,6 +206,16 @@ namespace VWOSdk
         {
             return usageStats;
         }
+        /// <summary>
+        /// Used for Unit Test
+        /// </summary>
+        /// <returns>
+        /// BatchEventQueue Object.
+        /// </returns>
+        public BatchEventQueue getBatchEventQueue()
+        {
+            return this._BatchEventQueue;
+        }
 
     }
 }
