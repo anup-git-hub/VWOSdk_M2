@@ -685,6 +685,21 @@ namespace VWOSdk
                 return evaluateTrafficAndGetVariation(campaign, userStorageMap, customVariables, campaignKey, apiName, variationTargetingVariables, initIntegration, userId);
             }
         }
+        /// <summary>
+        /// Get variation for the winning campaign.
+        /// </summary>
+        /// <param name="campaign"></param>
+        /// <param name="userStorageMap"></param>
+        /// <param name="customVariables"></param>
+        /// <param name="campaignKey"></param>
+        /// <param name="apiName"></param>
+        /// <param name="variationTargetingVariables"></param>
+        /// <param name="initIntegration"></param>
+        /// <param name="userId"></param>
+        /// <param name="disableLogs"></param>
+        /// <returns>
+        /// If Variation is allocated, returns UserAssignedInfo with valid details, else return Empty UserAssignedInfo.
+        /// </returns>  
         private UserAllocationInfo evaluateTrafficAndGetVariation(BucketedCampaign campaign, UserStorageMap userStorageMap, Dictionary<string, dynamic> customVariables,
            string campaignKey, string apiName, Dictionary<string, dynamic> variationTargetingVariables, bool initIntegration, string userId, bool disableLogs = false)
         {
