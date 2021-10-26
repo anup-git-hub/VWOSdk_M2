@@ -46,7 +46,9 @@ namespace VWOSdk
             internal static readonly string TRACK_GOAL = "track-goal";
             internal static readonly string PUSH_TAGS = "push";
             internal static readonly string BATCH_EVENTS = "batch-events";
-
+            internal static readonly string TRACK_USER_ARCH_ENABLED = "events/t";
+            internal static readonly string TRACK_GOAL_ARCH_ENABLED = "events/t";
+            internal static readonly string PUSH_TAGS_ARCH_ENABLED = "events/t";
         }
 
         public static class CampaignStatus
