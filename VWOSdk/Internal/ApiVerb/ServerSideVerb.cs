@@ -313,7 +313,6 @@ namespace VWOSdk
                 response.EnsureSuccessStatusCode();
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.StatusCode < System.Net.HttpStatusCode.Ambiguous)
                 {
-
                     return true;
                 }
             }
@@ -367,7 +366,7 @@ namespace VWOSdk
             $"&{GetUnixMsTimeStampArchEnabled()}" +
             $"{GetUsageStatsQuery(usageStats)}";
         }
-        private static string GetTrackUserArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion, int campaignId, int variationId)
+        public static string GetTrackUserArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion, int campaignId, int variationId)
         {
             string payLoad = "{" +
                         "\"d\": {" +
@@ -400,7 +399,7 @@ namespace VWOSdk
             $"&{GetRandomQueryArchEnabled()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}";
         }
-        private static string GetGoalArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion,
+        public static string GetGoalArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion,
             Dictionary<string, int> metricMap, List<string> revenueListProp, string revenue, string goalIdentifier)
         {
             string payLoad = "{" +
@@ -413,13 +412,13 @@ namespace VWOSdk
                                             "\"sdkName\":\"" + sdkName + "\"," +
                                             "\"$visitor\":{\"props\":{\"vwo_fs_environment\": \"" + sdkKey + "\" }}," +
                                             "\"sdkVersion\":\"" + sdkVersion + "\"," +
-                                             "\"vwoMeta\":{\"metric\":{" + $"{GetGoal(metricMap)}" + $"{GetrevenueProp(revenueListProp, revenue)}" + "}}" +
-                                            "}," +
-                                 "\"isCustomEvent\":true," +
+                                             "\"vwoMeta\":{\"metric\":{" + $"{GetGoal(metricMap)}" + "}" + $"{GetrevenueProp(revenueListProp, revenue)}" + "}" +
+                                            "," +
+                                 "\"customEvent\":true}," +
                                  "\"name\":\"" + goalIdentifier + "\"," +
                                  "\"time\":" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + "" +
                                  "}," +
-                      "\"visitor\": {" +
+                          "\"visitor\": {" +
                                      "\"props\":{\"vwo_fs_environment\":\"" + sdkKey + "\"}" +
                                    "}" +
                          "}" +
@@ -435,7 +434,7 @@ namespace VWOSdk
                 var listStats = new List<string>();
                 foreach (var item in metricMap)
                 {
-                    listStats.Add("\"id_" + item.Key + "\"" + ":\"[g_" + item.Value + "]\"");
+                    listStats.Add("'id_" + item.Key + "'" + ":[\"g_" + item.Value + "\"]");
                 }
                 GoalString = string.Join(",", listStats);
             }
@@ -477,7 +476,7 @@ namespace VWOSdk
             $"&{GetRandomQueryArchEnabled()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}";
         }
-        private static string GetPushTagsArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion, Dictionary<string, string> customDimensionMap)
+        public static string GetPushTagsArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion, Dictionary<string, string> customDimensionMap)
         {
             string payLoad = "{" +
                         "\"d\": {" +
@@ -487,14 +486,14 @@ namespace VWOSdk
                         "\"event\": {" +
                                  "\"props\": {" +
                                             "\"sdkName\": \"" + sdkName + "\"," +
-                                            "\"$visitor\": {\"props\": {\"vwo_fs_environment\": \"" + sdkKey + "\" ," + $"{GetTagValueMap(customDimensionMap)}" + "}}," +
+                                            "\"$visitor\": {\"props\": {\"vwo_fs_environment\": \"" + sdkKey + "\"" + $"{GetTagValueMap(customDimensionMap)}" + "}}," +
                                             "\"sdkVersion\": \"" + sdkVersion + "\"," +
-                                             "\"isCustomEvent\":true" +
+                                             "\"customEvent\":true" +
                                             "}," +
                                  "\"name\": \"vwo_syncVisitorProp\"," +
                                  "\"time\": " + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + "" +
                                  "}," +
-                         "\"visitor\": {\"props\": {\"vwo_fs_environment\": \"" + sdkKey + "\" ," + $"{GetTagValueMap(customDimensionMap)}" + "}}" +
+                         "\"visitor\": {\"props\": {\"vwo_fs_environment\": \"" + sdkKey + "\"" + $"{GetTagValueMap(customDimensionMap)}" + "}}" +
                          "}" +
                        "}";
             return payLoad;
@@ -507,12 +506,68 @@ namespace VWOSdk
                 var listStats = new List<string>();
                 foreach (var item in customDimensionMap)
                 {
-                    listStats.Add("\"" + item.Key + "\"" + ":" + item.Value);
+                    listStats.Add("\"" + item.Key + "\"" + ":\"" + item.Value + "\"");
                 }
 
                 TagValues = "," + string.Join(",", listStats);
             }
             return TagValues.TrimEnd(',');
+        }
+        public static Dictionary<string, dynamic> getEventArchQueryParams(long accountId, string sdkKey, Dictionary<string, int> usageStats)
+        {
+            var QueryParams = "en=vwo_variationShown&p=FS&" +
+            $"{GetAccountIdQueryArchEnabled(accountId)}" +
+            $"&{GetRandomQueryArchEnabled()}" +
+            $"&{GetUnixMsTimeStampArchEnabled()}" +
+            $"&{ GetSdkKeyQuery(sdkKey)}" +
+            $"{GetUsageStatsQuery(usageStats)}";
+            Dictionary<string, dynamic> queryDict = new Dictionary<string, dynamic>();
+            foreach (string token in QueryParams.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] parts = token.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2)
+                    queryDict[parts[0].Trim()] = System.Web.HttpUtility.UrlDecode(parts[1]).Trim();
+                else
+                    queryDict[parts[0].Trim()] = "";
+            }
+            return queryDict;
+
+        }
+        public static Dictionary<string, dynamic> getEventArchTrackGoalParams(long accountId, string sdkKey, string goalIdentifier)
+        {
+            var QueryParams = "en=" + goalIdentifier + "&" +
+            $"{GetAccountIdQueryArchEnabled(accountId)}" +
+            $"&{GetRandomQueryArchEnabled()}" +
+            $"&{ GetSdkKeyQuery(sdkKey)}" +
+            $"&{GetUnixMsTimeStampArchEnabled()}";
+            Dictionary<string, dynamic> queryDict = new Dictionary<string, dynamic>();
+            foreach (string token in QueryParams.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] parts = token.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2)
+                    queryDict[parts[0].Trim()] = System.Web.HttpUtility.UrlDecode(parts[1]).Trim();
+                else
+                    queryDict[parts[0].Trim()] = "";
+            }
+            return queryDict;
+        }
+        public static Dictionary<string, dynamic> getEventArchPushParams(long accountId, string sdkKey)
+        {
+            var QueryParams = "en=vwo_syncVisitorProp&" +
+            $"{GetAccountIdQueryArchEnabled(accountId)}" +
+            $"&{GetRandomQueryArchEnabled()}" +
+            $"&{ GetSdkKeyQuery(sdkKey)}" +
+            $"&{GetUnixMsTimeStampArchEnabled()}";
+            Dictionary<string, dynamic> queryDict = new Dictionary<string, dynamic>();
+            foreach (string token in QueryParams.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] parts = token.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2)
+                    queryDict[parts[0].Trim()] = System.Web.HttpUtility.UrlDecode(parts[1]).Trim();
+                else
+                    queryDict[parts[0].Trim()] = "";
+            }
+            return queryDict;
         }
     }
 }
