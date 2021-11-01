@@ -35,7 +35,7 @@ namespace VWOSdk.Tests
             VWO.Configure(new Validator());
             vwoInstance = VWO.Launch(settings, true);
             Logger.WriteLog(LogLevel.DEBUG, "TrackUser payload and queryParams for enabled event arch");
-            string payLoad = ServerSideVerb.GetTrackUserArchEnabledPayload("Ashley", settings.AccountId, "netstandard2.0", settings.SdkKey, sdkVersion, 20, 3);
+            string payLoad = ServerSideVerb.GetTrackUserArchEnabledPayload("Ashley", settings.AccountId, settings.SdkKey, sdkVersion, 20, 3);
             Dictionary<string, int> usageStats = new Dictionary<string, int>();
             usageStats.Add("_l", 1);
             usageStats.Add("cl", 1);
@@ -94,7 +94,7 @@ namespace VWOSdk.Tests
             metricMap.Add("20", 20);
             metricMap.Add("10", 30);
             metricMap.Add("50", 40);
-            string payLoad = ServerSideVerb.GetGoalArchEnabledPayload("Ashley", settings.AccountId, "netstandard2.0", settings.SdkKey, sdkVersion, metricMap, new List<string>() { "revenue" }, "300", "goalIdentifier");
+            string payLoad = ServerSideVerb.GetGoalArchEnabledPayload("Ashley", settings.AccountId, settings.SdkKey, sdkVersion, metricMap, new List<string>() { "revenue" }, "300", "goalIdentifier");
             Dictionary<string, dynamic> queryParams = ServerSideVerb.getEventArchTrackGoalParams(settings.AccountId, settings.SdkKey, "goalIdentifier");
             Assert.True(queryParams.TryGetValue("a", out dynamic a));
             Assert.NotNull(a);
@@ -135,7 +135,7 @@ namespace VWOSdk.Tests
             VWO.Configure(new Validator());
             vwoInstance = VWO.Launch(settings, true);
             Logger.WriteLog(LogLevel.DEBUG, "Push payload and queryParams for enabled event arch");
-            string payLoad = ServerSideVerb.GetPushTagsArchEnabledPayload("Ashley", settings.AccountId, "netstandard2.0", settings.SdkKey, sdkVersion, new Dictionary<string, string>() { { "tagKey", "TagValue" } });
+            string payLoad = ServerSideVerb.GetPushTagsArchEnabledPayload("Ashley", settings.AccountId, settings.SdkKey, sdkVersion, new Dictionary<string, string>() { { "tagKey", "TagValue" } });
             Dictionary<string, dynamic> queryParams = ServerSideVerb.getEventArchPushParams(settings.AccountId, settings.SdkKey);
             Assert.True(queryParams.TryGetValue("a", out dynamic a));
             Assert.NotNull(a);
@@ -175,7 +175,7 @@ namespace VWOSdk.Tests
             VWO.Configure(new Validator());
             vwoInstance = VWO.Launch(settings, true);
             Logger.WriteLog(LogLevel.DEBUG, "Push payload and queryParams with multiple CD for enabled event arch");
-            string payLoad = ServerSideVerb.GetPushTagsArchEnabledPayload("Ashley", settings.AccountId, "netstandard2.0", settings.SdkKey, sdkVersion,
+            string payLoad = ServerSideVerb.GetPushTagsArchEnabledPayload("Ashley", settings.AccountId, settings.SdkKey, sdkVersion,
                 new Dictionary<string, string>() {
                 { "string", "string" },
                 { "int", "20" },

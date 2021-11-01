@@ -93,9 +93,9 @@ namespace VWOSdk
         {
             Log.Debug($"({file}):impression built for vwo_variationShown event for account ID:{a}, user ID:{u}, and campaign ID:{c} when EventArchEnabled is true", disableLogs);
         }
-        public static void ImpressionForTrackGoalArchEnabled(string file, string a, string u, string c, string goalName, bool disableLogs = false)
+        public static void ImpressionForTrackGoalArchEnabled(string file, string a, string u, string c, string goalIdentifier, bool disableLogs = false)
         {
-            Log.Debug($"({file}): impression built for {goalName} event for accountId:{a}, user ID:{u}, and campaign ID:{c} when EventArchEnabled is true", disableLogs);
+            Log.Debug($"({file}): impression built for {goalIdentifier} event for accountId:{a}, user ID:{u}, and campaign ID:{c} when EventArchEnabled is true", disableLogs);
         }
         public static void ImpressionForPushTagArchEnabled(string file, string a, string u, string properties, bool disableLogs = false)
         {

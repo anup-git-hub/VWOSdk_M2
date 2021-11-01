@@ -35,12 +35,13 @@ namespace VWOSdk
         private static readonly string TrackUserVerb = Constants.Endpoints.TRACK_USER;
         private static readonly string TrackGoalVerb = Constants.Endpoints.TRACK_GOAL;
         private static readonly string PushTagsVerb = Constants.Endpoints.PUSH_TAGS;
-        private static readonly string TrackUserVerbArchEnabled = Constants.Endpoints.TRACK_USER_ARCH_ENABLED;
-        private static readonly string TrackGoalVerbArchEnabled = Constants.Endpoints.TRACK_GOAL_ARCH_ENABLED;
-        private static readonly string PushTagsVerbArchEnabled = Constants.Endpoints.PUSH_TAGS_ARCH_ENABLED;
+        private static readonly string EventArchVerb = Constants.Endpoints.EVENT_ARCH;
         private static readonly string BatchEventVerb = Constants.Endpoints.BATCH_EVENTS;
         private static readonly string file = typeof(ServerSideVerb).FullName;
         private static readonly string sdkVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        private static readonly string sdkName = Constants.SDK_NAME;
+        private static readonly string TrackEventName = Constants.TRACK_EVENT_NAME;
+        private static readonly string PushEventName = Constants.PUSH_EVENT_NAME;
         internal static ApiRequest SettingsRequest(long accountId, string sdkKey)
         {
             var settingsRequest = new ApiRequest(Method.GET)
@@ -105,7 +106,7 @@ namespace VWOSdk
         }
         private static string GetBatchSdkQuery()
         {
-            return $"sd=netstandard2.0&sv={sdkVersion}";
+            return $"sd={sdkName}&sv={sdkVersion}";
         }
         private static string withMinifiedAccountIdQuery(long accountId)
         {
@@ -177,7 +178,7 @@ namespace VWOSdk
         }
         private static string GetSdkQuery()
         {
-            return $"sdk=netstandard2.0&sdk-v={sdkVersion}";
+            return $"sdk={sdkName}&sdk-v={sdkVersion}";
         }
         private static string GetQueryParamertersForTrackUser(long accountId, int campaignId, int variationId, string userId, Dictionary<string, int> usageStats)
         {
@@ -192,7 +193,6 @@ namespace VWOSdk
                 $"{GetUsageStatsQuery(usageStats)}" +
                 $"&{GetSdkQuery()}";
         }
-
         private static string GetEdQuery()
         {
             return "ed={\"p\":\"server\"}";
@@ -249,10 +249,11 @@ namespace VWOSdk
         {
             return $"random={GetRandomNumber()}";
         }
-        private static string GetRandomQueryArchEnabled()
+        private static string GetEventName(string eventName)
         {
-            return $"random={GetRandomNumber()}";
+            return $"en={eventName}";
         }
+
         private static double GetRandomNumber()
         {
             Random random = new Random();
@@ -263,15 +264,15 @@ namespace VWOSdk
             string queryParams = GetQueryParamertersForTrackUserArchEnabled(accountId, usageStats);
             var trackUserRequest = new ApiRequest(Method.POST, isDevelopmentMode)
             {
-                Uri = new Uri($"{Host}/{Verb}/{TrackUserVerbArchEnabled}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
-                logUri = new Uri($"{Host}/{Verb}/{TrackUserVerbArchEnabled}?{queryParams}"),
+                Uri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
+                logUri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}"),
             };
             trackUserRequest.WithCaller(AppContext.ApiCaller);
             LogDebugMessage.ImpressionForTrackUserArchEnabled(file, accountId.ToString(), userId, campaignId.ToString());
-            string PayLoad = GetTrackUserArchEnabledPayload(userId, accountId, "netstandard2.0", sdkKey, sdkVersion, campaignId, variationId);
+            string PayLoad = GetTrackUserArchEnabledPayload(userId, accountId, sdkKey, sdkVersion, campaignId, variationId);
             HttpClient httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "netstandard2.0");
+            httpClient.DefaultRequestHeaders.Add("User-Agent", sdkName);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var data = new StringContent(PayLoad, Encoding.UTF8, "application/json");
             try
@@ -296,15 +297,15 @@ namespace VWOSdk
             string queryParams = GetQueryParamertersForTrackGoalArchEnabled(accountId, goalIdentifier);
             var trackUserRequest = new ApiRequest(Method.POST, isDevelopmentMode)
             {
-                Uri = new Uri($"{Host}/{Verb}/{TrackGoalVerbArchEnabled}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
-                logUri = new Uri($"{Host}/{Verb}/{TrackGoalVerbArchEnabled}?{queryParams}"),
+                Uri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
+                logUri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}"),
             };
             trackUserRequest.WithCaller(AppContext.ApiCaller);
             LogDebugMessage.ImpressionForTrackGoalArchEnabled(file, accountId.ToString(), userId, $"{GetCampaigns(metricMap)}", goalIdentifier);
-            string PayLoad = GetGoalArchEnabledPayload(userId, accountId, "netstandard2.0", sdkKey, sdkVersion, metricMap, revenueListProp, revenueValue, goalIdentifier);
+            string PayLoad = GetGoalArchEnabledPayload(userId, accountId, sdkKey, sdkVersion, metricMap, revenueListProp, revenueValue, goalIdentifier);
             HttpClient httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "netstandard2.0");
+            httpClient.DefaultRequestHeaders.Add("User-Agent", sdkName);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var data = new StringContent(PayLoad, Encoding.UTF8, "application/json");
             try
@@ -329,15 +330,15 @@ namespace VWOSdk
             string queryParams = GetQueryParamertersForPushTagsArchEnabled(settings.AccountId);
             var trackUserRequest = new ApiRequest(Method.POST, isDevelopmentMode)
             {
-                Uri = new Uri($"{Host}/{Verb}/{PushTagsVerbArchEnabled}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
-                logUri = new Uri($"{Host}/{Verb}/{PushTagsVerbArchEnabled}?{queryParams}"),
+                Uri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
+                logUri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}"),
             };
             trackUserRequest.WithCaller(AppContext.ApiCaller);
             LogDebugMessage.ImpressionForPushTagArchEnabled(file, settings.AccountId.ToString(), userId, queryParams);
-            string PayLoad = GetPushTagsArchEnabledPayload(userId, settings.AccountId, "netstandard2.0", sdkKey, sdkVersion, customDimensionMap);
+            string PayLoad = GetPushTagsArchEnabledPayload(userId, settings.AccountId, sdkKey, sdkVersion, customDimensionMap);
             HttpClient httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "netstandard2.0");
+            httpClient.DefaultRequestHeaders.Add("User-Agent", sdkName);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var data = new StringContent(PayLoad, Encoding.UTF8, "application/json");
             try
@@ -362,11 +363,11 @@ namespace VWOSdk
         {
             return "en=vwo_variationShown&p=FS&" +
             $"{GetAccountIdQueryArchEnabled(accountId)}" +
-            $"&{GetRandomQueryArchEnabled()}" +
+            $"&{GetRandomQuery()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}" +
             $"{GetUsageStatsQuery(usageStats)}";
         }
-        public static string GetTrackUserArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion, int campaignId, int variationId)
+        public static string GetTrackUserArchEnabledPayload(string userId, long accountId, string sdkKey, string sdkVersion, int campaignId, int variationId)
         {
             string payLoad = "{" +
                         "\"d\": {" +
@@ -396,10 +397,10 @@ namespace VWOSdk
         {
             return "en=" + goalIdentifier + "&" +
             $"{GetAccountIdQueryArchEnabled(accountId)}" +
-            $"&{GetRandomQueryArchEnabled()}" +
+            $"&{GetRandomQuery()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}";
         }
-        public static string GetGoalArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion,
+        public static string GetGoalArchEnabledPayload(string userId, long accountId, string sdkKey, string sdkVersion,
             Dictionary<string, int> metricMap, List<string> revenueListProp, string revenue, string goalIdentifier)
         {
             string payLoad = "{" +
@@ -473,10 +474,10 @@ namespace VWOSdk
         {
             return "en=vwo_syncVisitorProp&" +
             $"{GetAccountIdQueryArchEnabled(accountId)}" +
-            $"&{GetRandomQueryArchEnabled()}" +
+            $"&{GetRandomQuery()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}";
         }
-        public static string GetPushTagsArchEnabledPayload(string userId, long accountId, string sdkName, string sdkKey, string sdkVersion, Dictionary<string, string> customDimensionMap)
+        public static string GetPushTagsArchEnabledPayload(string userId, long accountId, string sdkKey, string sdkVersion, Dictionary<string, string> customDimensionMap)
         {
             string payLoad = "{" +
                         "\"d\": {" +
@@ -515,9 +516,9 @@ namespace VWOSdk
         }
         public static Dictionary<string, dynamic> getEventArchQueryParams(long accountId, string sdkKey, Dictionary<string, int> usageStats)
         {
-            var QueryParams = "en=vwo_variationShown&p=FS&" +
-            $"{GetAccountIdQueryArchEnabled(accountId)}" +
-            $"&{GetRandomQueryArchEnabled()}" +
+            var QueryParams = $"{GetEventName(TrackEventName)}" + "&p=FS" +
+            $"&{GetAccountIdQueryArchEnabled(accountId)}" +
+            $"&{GetRandomQuery()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}" +
             $"&{ GetSdkKeyQuery(sdkKey)}" +
             $"{GetUsageStatsQuery(usageStats)}";
@@ -535,9 +536,9 @@ namespace VWOSdk
         }
         public static Dictionary<string, dynamic> getEventArchTrackGoalParams(long accountId, string sdkKey, string goalIdentifier)
         {
-            var QueryParams = "en=" + goalIdentifier + "&" +
-            $"{GetAccountIdQueryArchEnabled(accountId)}" +
-            $"&{GetRandomQueryArchEnabled()}" +
+            var QueryParams = $"{GetEventName(goalIdentifier)}" +
+            $"&{GetAccountIdQueryArchEnabled(accountId)}" +
+            $"&{GetRandomQuery()}" +
             $"&{ GetSdkKeyQuery(sdkKey)}" +
             $"&{GetUnixMsTimeStampArchEnabled()}";
             Dictionary<string, dynamic> queryDict = new Dictionary<string, dynamic>();
@@ -553,9 +554,9 @@ namespace VWOSdk
         }
         public static Dictionary<string, dynamic> getEventArchPushParams(long accountId, string sdkKey)
         {
-            var QueryParams = "en=vwo_syncVisitorProp&" +
-            $"{GetAccountIdQueryArchEnabled(accountId)}" +
-            $"&{GetRandomQueryArchEnabled()}" +
+            var QueryParams = $"{GetEventName(PushEventName)}" +
+            $"&{GetAccountIdQueryArchEnabled(accountId)}" +
+            $"&{GetRandomQuery()}" +
             $"&{ GetSdkKeyQuery(sdkKey)}" +
             $"&{GetUnixMsTimeStampArchEnabled()}";
             Dictionary<string, dynamic> queryDict = new Dictionary<string, dynamic>();
