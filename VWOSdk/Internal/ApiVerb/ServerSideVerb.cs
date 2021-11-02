@@ -264,8 +264,8 @@ namespace VWOSdk
             string queryParams = GetQueryParamertersForTrackUserArchEnabled(accountId, usageStats);
             var trackUserRequest = new ApiRequest(Method.POST, isDevelopmentMode)
             {
-                Uri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
-                logUri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}"),
+                Uri = new Uri($"{Host}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
+                logUri = new Uri($"{Host}/{EventArchVerb}?{queryParams}"),
             };
             trackUserRequest.WithCaller(AppContext.ApiCaller);
             LogDebugMessage.ImpressionForTrackUserArchEnabled(file, accountId.ToString(), userId, campaignId.ToString());
@@ -281,6 +281,7 @@ namespace VWOSdk
                 response.EnsureSuccessStatusCode();
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.StatusCode < System.Net.HttpStatusCode.Ambiguous)
                 {
+                    LogDebugMessage.EventArchImpressionSuccess(file, accountId.ToString(), queryParams);
                     return true;
                 }
             }
@@ -297,8 +298,8 @@ namespace VWOSdk
             string queryParams = GetQueryParamertersForTrackGoalArchEnabled(accountId, goalIdentifier);
             var trackUserRequest = new ApiRequest(Method.POST, isDevelopmentMode)
             {
-                Uri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
-                logUri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}"),
+                Uri = new Uri($"{Host}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
+                logUri = new Uri($"{Host}/{EventArchVerb}?{queryParams}"),
             };
             trackUserRequest.WithCaller(AppContext.ApiCaller);
             LogDebugMessage.ImpressionForTrackGoalArchEnabled(file, accountId.ToString(), userId, $"{GetCampaigns(metricMap)}", goalIdentifier);
@@ -314,6 +315,7 @@ namespace VWOSdk
                 response.EnsureSuccessStatusCode();
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.StatusCode < System.Net.HttpStatusCode.Ambiguous)
                 {
+                    LogDebugMessage.EventArchImpressionSuccess(file, accountId.ToString(), queryParams);
                     return true;
                 }
             }
@@ -330,8 +332,8 @@ namespace VWOSdk
             string queryParams = GetQueryParamertersForPushTagsArchEnabled(settings.AccountId);
             var trackUserRequest = new ApiRequest(Method.POST, isDevelopmentMode)
             {
-                Uri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
-                logUri = new Uri($"{Host}/{Verb}/{EventArchVerb}?{queryParams}"),
+                Uri = new Uri($"{Host}/{EventArchVerb}?{queryParams}&{GetSdkKeyQuery(sdkKey)}"),
+                logUri = new Uri($"{Host}/{EventArchVerb}?{queryParams}"),
             };
             trackUserRequest.WithCaller(AppContext.ApiCaller);
             LogDebugMessage.ImpressionForPushTagArchEnabled(file, settings.AccountId.ToString(), userId, queryParams);
@@ -347,7 +349,7 @@ namespace VWOSdk
                 response.EnsureSuccessStatusCode();
                 if (response.StatusCode == System.Net.HttpStatusCode.OK && response.StatusCode < System.Net.HttpStatusCode.Ambiguous)
                 {
-
+                    LogDebugMessage.EventArchImpressionSuccess(file, settings.AccountId.ToString(),queryParams);                  
                     return true;
                 }
             }
@@ -361,8 +363,9 @@ namespace VWOSdk
         }
         private static string GetQueryParamertersForTrackUserArchEnabled(long accountId, Dictionary<string, int> usageStats)
         {
-            return "en=vwo_variationShown&p=FS&" +
-            $"{GetAccountIdQueryArchEnabled(accountId)}" +
+
+            return $"{GetEventName(TrackEventName)}" + "&p=FS" +
+            $"&{GetAccountIdQueryArchEnabled(accountId)}" +
             $"&{GetRandomQuery()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}" +
             $"{GetUsageStatsQuery(usageStats)}";
@@ -395,8 +398,8 @@ namespace VWOSdk
         }
         private static string GetQueryParamertersForTrackGoalArchEnabled(long accountId, string goalIdentifier)
         {
-            return "en=" + goalIdentifier + "&" +
-            $"{GetAccountIdQueryArchEnabled(accountId)}" +
+            return $"{GetEventName(goalIdentifier)}" +
+            $"&{GetAccountIdQueryArchEnabled(accountId)}" +
             $"&{GetRandomQuery()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}";
         }
@@ -435,7 +438,7 @@ namespace VWOSdk
                 var listStats = new List<string>();
                 foreach (var item in metricMap)
                 {
-                    listStats.Add("'id_" + item.Key + "'" + ":[\"g_" + item.Value + "\"]");
+                    listStats.Add("\"id_" + item.Key + "\"" + ":[\"g_" + item.Value + "\"]");
                 }
                 GoalString = string.Join(",", listStats);
             }
@@ -472,8 +475,8 @@ namespace VWOSdk
         }
         private static string GetQueryParamertersForPushTagsArchEnabled(long accountId)
         {
-            return "en=vwo_syncVisitorProp&" +
-            $"{GetAccountIdQueryArchEnabled(accountId)}" +
+            return $"{GetEventName(PushEventName)}" +
+            $"&{GetAccountIdQueryArchEnabled(accountId)}" +
             $"&{GetRandomQuery()}" +
             $"&{GetUnixMsTimeStampArchEnabled()}";
         }

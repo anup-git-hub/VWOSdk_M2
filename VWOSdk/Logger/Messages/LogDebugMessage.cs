@@ -101,6 +101,10 @@ namespace VWOSdk
         {
            Log.Debug($"({file}): Impression built for visitor property:{properties} for accountId:{a} and user ID:{u}", disableLogs);
         }
+        public static void EventArchImpressionSuccess(string file, string a, string properties, bool disableLogs = false)
+        {
+            Log.Debug($"({file}): Impression built for visitor property:{properties} was successfully received by VWO for accountId:{a}", disableLogs);
+        }
         public static void ImpressionForBatchEvent(string file, string properties, bool disableLogs = false)
         {
             Log.Debug($"({file}): impression built for track-user - {properties}", disableLogs);
