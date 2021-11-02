@@ -253,7 +253,6 @@ namespace VWOSdk
         {
             return $"en={eventName}";
         }
-
         private static double GetRandomNumber()
         {
             Random random = new Random();
@@ -321,7 +320,6 @@ namespace VWOSdk
             }
             catch (HttpRequestException ex)
             {
-
                 LogErrorMessage.UnableToDisplayHttpRequest(file, ex.StackTrace);
                 return false;
             }
@@ -355,7 +353,6 @@ namespace VWOSdk
             }
             catch (HttpRequestException ex)
             {
-
                 LogErrorMessage.UnableToDisplayHttpRequest(file, ex.StackTrace);
                 return false;
             }
@@ -418,7 +415,7 @@ namespace VWOSdk
                                             "\"sdkVersion\":\"" + sdkVersion + "\"," +
                                              "\"vwoMeta\":{\"metric\":{" + $"{GetGoal(metricMap)}" + "}" + $"{GetrevenueProp(revenueListProp, revenue)}" + "}" +
                                             "," +
-                                 "\"customEvent\":true}," +
+                                 "\"isCustomEvent\":true}," +
                                  "\"name\":\"" + goalIdentifier + "\"," +
                                  "\"time\":" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + "" +
                                  "}," +
@@ -468,7 +465,6 @@ namespace VWOSdk
                 {
                     listStats.Add("\"" + item + "\"" + ":" + revenue);
                 }
-
                 revenueProp = "," + string.Join(",", listStats);
             }
             return revenueProp.TrimEnd(',');
@@ -492,7 +488,7 @@ namespace VWOSdk
                                             "\"sdkName\": \"" + sdkName + "\"," +
                                             "\"$visitor\": {\"props\": {\"vwo_fs_environment\": \"" + sdkKey + "\"" + $"{GetTagValueMap(customDimensionMap)}" + "}}," +
                                             "\"sdkVersion\": \"" + sdkVersion + "\"," +
-                                             "\"customEvent\":true" +
+                                             "\"isCustomEvent\":true" +
                                             "}," +
                                  "\"name\": \"vwo_syncVisitorProp\"," +
                                  "\"time\": " + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + "" +
@@ -512,7 +508,6 @@ namespace VWOSdk
                 {
                     listStats.Add("\"" + item.Key + "\"" + ":\"" + item.Value + "\"");
                 }
-
                 TagValues = "," + string.Join(",", listStats);
             }
             return TagValues.TrimEnd(',');
@@ -535,7 +530,6 @@ namespace VWOSdk
                     queryDict[parts[0].Trim()] = "";
             }
             return queryDict;
-
         }
         public static Dictionary<string, dynamic> getEventArchTrackGoalParams(long accountId, string sdkKey, string goalIdentifier)
         {

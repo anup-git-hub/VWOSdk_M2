@@ -20,7 +20,6 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
-
 namespace VWOSdk.Tests
 {
     public class EventArchTest
@@ -127,7 +126,7 @@ namespace VWOSdk.Tests
             Assert.True(parsed.SelectToken("d.event.props.$visitor").HasValues && typeof(string).IsInstanceOfType(parsed.SelectToken("d.event.props.$visitor.props.vwo_fs_environment").Value<string>()));
             Assert.True(parsed.SelectToken("d.event.props.vwoMeta").HasValues && typeof(int).IsInstanceOfType(parsed.SelectToken("d.event.props.vwoMeta.revenue").Value<int>()));
             Assert.True(parsed.SelectToken("d.event.props.vwoMeta.metric.id_20").Value<JArray>().GetType().Name == "JArray");
-            Assert.True(typeof(bool).IsInstanceOfType(parsed.SelectToken("d.event.props.customEvent").Value<bool>()));
+            Assert.True(typeof(bool).IsInstanceOfType(parsed.SelectToken("d.event.props.isCustomEvent").Value<bool>()));
         }
         [Fact]
         public void pushPayloadTest()
@@ -167,7 +166,7 @@ namespace VWOSdk.Tests
             Assert.True(parsed.SelectToken("d.event").HasValues && typeof(string).IsInstanceOfType(parsed.SelectToken("d.event.props.sdkVersion").Value<string>()));
             Assert.True(parsed.SelectToken("d.event.props.$visitor").HasValues && typeof(string).IsInstanceOfType(parsed.SelectToken("d.event.props.$visitor.props.vwo_fs_environment").Value<string>()));
             Assert.True(parsed.SelectToken("d.event.props.$visitor").HasValues && typeof(string).IsInstanceOfType(parsed.SelectToken("d.event.props.$visitor.props.tagKey").Value<string>()));
-            Assert.True(typeof(bool).IsInstanceOfType(parsed.SelectToken("d.event.props.customEvent").Value<bool>()));
+            Assert.True(typeof(bool).IsInstanceOfType(parsed.SelectToken("d.event.props.isCustomEvent").Value<bool>()));
         }
         [Fact]
         public void pushPayloadWithMultipleCDTest()
@@ -182,7 +181,6 @@ namespace VWOSdk.Tests
                 { "double", "20.34" },
                 { "boolean", "false" }
                 });
-
             Dictionary<string, dynamic> queryParams = ServerSideVerb.getEventArchPushParams(settings.AccountId, settings.SdkKey);
             Assert.True(queryParams.TryGetValue("a", out dynamic a));
             Assert.NotNull(a);
@@ -222,7 +220,7 @@ namespace VWOSdk.Tests
             Assert.True(parsed.SelectToken("d.event.props.$visitor").HasValues && typeof(string).IsInstanceOfType(parsed.SelectToken("d.event.props.$visitor.props.int").Value<string>()));
             Assert.True(parsed.SelectToken("d.event.props.$visitor").HasValues && typeof(string).IsInstanceOfType(parsed.SelectToken("d.event.props.$visitor.props.double").Value<string>()));
             Assert.True(parsed.SelectToken("d.event.props.$visitor").HasValues && typeof(string).IsInstanceOfType(parsed.SelectToken("d.event.props.$visitor.props.boolean").Value<string>()));
-            Assert.True(typeof(bool).IsInstanceOfType(parsed.SelectToken("d.event.props.customEvent").Value<bool>()));
+            Assert.True(typeof(bool).IsInstanceOfType(parsed.SelectToken("d.event.props.isCustomEvent").Value<bool>()));
         }
     }
 }
