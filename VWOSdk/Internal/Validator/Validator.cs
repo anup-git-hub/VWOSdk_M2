@@ -33,6 +33,7 @@ namespace VWOSdk
         bool IsFeatureEnabled(string campaignKey, string userId, Dictionary<string, dynamic> options = null);
         bool GetFeatureVariableValue(string campaignKey, string variableKey, string userId, Dictionary<string, dynamic> options = null);
         bool Push(dynamic tagKey, dynamic tagValue, string userId);
+        bool Push(Dictionary<string, string> customDimensionMap, string userId);
         bool SettingsFile(Settings settingsFile);
     }
 
@@ -98,7 +99,10 @@ namespace VWOSdk
         {
             return ValidateWithLog(() => ValidateString(tagKey) && ValidateString(tagValue) && ValidateString(userId), nameof(tagKey), nameof(Push));
         }
-
+        public bool Push(Dictionary<string, string> customDimensionMap, string userId)
+        {
+            return ValidateWithLog(() => customDimensionMap is Dictionary<string, string> && customDimensionMap.Count > 0 && ValidateString(userId), nameof(customDimensionMap), nameof(Push));
+        }
         public bool SettingsFile(Settings settingsFile)
         {
             var result = NotNull(settingsFile);
